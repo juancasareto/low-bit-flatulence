@@ -16,28 +16,30 @@
     color: #e8e8e8;
   }
   h1 {
-    font-size: 28px;
+    font-size: 42px;
     color: #f5c542;
-    letter-spacing: 6px;
+    letter-spacing: 8px;
     text-transform: uppercase;
-    margin-bottom: 8px;
-    text-shadow: 2px 2px #a0801a;
+    margin-bottom: 6px;
+    text-shadow: 3px 3px #a0801a, 0 0 18px #f5c54288;
   }
   #subtitle {
-    font-size: 11px;
-    color: #7a7a9a;
-    letter-spacing: 3px;
+    font-size: 12px;
+    color: #aaaacc;
+    letter-spacing: 4px;
     margin-bottom: 16px;
   }
   canvas {
-    border: 2px solid #3a3a5c;
+    border: 2px solid #4a5a7c;
     image-rendering: pixelated;
     display: block;
+    max-width: 100%;
   }
   #hud {
     display: flex;
     justify-content: space-between;
-    width: 640px;
+    width: 1400px;
+    max-width: 100%;
     margin-top: 10px;
     font-size: 13px;
     letter-spacing: 2px;
@@ -45,7 +47,7 @@
   }
   #hud span { color: #f5c542; }
   #panel {
-    margin-top: 14px;
+    margin-top: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -66,11 +68,12 @@
   #fire-btn {
     background: #8b1a1a;
     border: 2px solid #cc3333;
+    border-radius: 4px;
     color: #fff;
     font-family: monospace;
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 2px;
-    padding: 6px 18px;
+    padding: 8px 22px;
     cursor: pointer;
     text-transform: uppercase;
     user-select: none;
@@ -90,11 +93,12 @@
     margin-top: 10px;
     background: #1a5c1a;
     border: 2px solid #33cc33;
+    border-radius: 4px;
     color: #fff;
     font-family: monospace;
     font-size: 14px;
     letter-spacing: 2px;
-    padding: 6px 24px;
+    padding: 8px 28px;
     cursor: pointer;
     text-transform: uppercase;
   }
@@ -109,13 +113,15 @@
     font-size: 12px;
     letter-spacing: 2px;
     color: #c0c0e0;
-    width: 640px;
+    width: 1400px;
+    max-width: 100%;
   }
   #power-bar-track {
     flex: 1;
-    height: 14px;
+    height: 18px;
     background: #1a1a2e;
-    border: 2px solid #3a3a5c;
+    border: 2px solid #4a5a7c;
+    border-radius: 3px;
     position: relative;
     overflow: hidden;
   }
@@ -137,7 +143,7 @@
 <h1>&#x1F525; FUEGO GÁSTRICO</h1>
 <div id="subtitle">LOW-BIT FLATULENCE</div>
 
-<canvas id="cv" width="640" height="240"></canvas>
+<canvas id="cv" width="1400" height="580"></canvas>
 
 <div id="hud">
   <div>OBJETIVOS: <span id="hud-obj">3</span></div>
@@ -168,21 +174,6 @@ const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// Paleta low-bit
-const PAL = {
-  sky:    '#1a1a2e',
-  skylow: '#16213e',
-  ground: '#2d5016',
-  dirt:   '#3d2b1f',
-  butt:   '#f0c0a0',
-  proj:   '#7a4010',
-  smoke:  '#5a7a10',
-  expl:   ['#7a4010','#a06820','#5a7a10','#c0a020'],
-  target: '#cc3333',
-  targetd:'#5a1a1a',
-  dist:   '#44aaff',
-  aim:    '#ffffff33',
-};
 
 // Estado del juego
 let state = {};
@@ -268,11 +259,13 @@ function enableInput(on) {
 
 // Física
 const G = 9.8;
-const CANNON_X = 30;
-const GROUND_Y = 200;
+const CANNON_X = 60;
+const GROUND_Y = 460;
+const CV_W = 1400;
+const CV_H = 580;
 
 function worldToScreen(dist) {
-  return CANNON_X + (dist / state.alcance) * (620 - CANNON_X);
+  return CANNON_X + (dist / state.alcance) * (CV_W - 20 - CANNON_X);
 }
 
 function fire(angleDeg) {
@@ -359,18 +352,18 @@ function update(dt) {
   const ry = p.vy * t - 0.5 * G * t * t;
 
   p.x = worldToScreen(rx);
-  p.y = GROUND_Y - (ry / state.alcance) * 400;
+  p.y = GROUND_Y - (ry / state.alcance) * (GROUND_Y - 40);
 
   p.trail.push({ x: p.x, y: p.y, a: 0.8 });
-  if (p.trail.length > 18) p.trail.shift();
+  if (p.trail.length > 28) p.trail.shift();
 
   // Colisión con el inodoro flotante (hitbox en coordenadas de pantalla)
   if (!state.objDestruido) {
-    const floatY  = Math.sin(Date.now() / 700) * 7;
+    const floatY  = Math.sin(Date.now() / 700) * 10;
     const ttx     = worldToScreen(state.distObj);
-    const tcy     = GROUND_Y - 50 + floatY; // base del inodoro
-    const inX     = p.x >= ttx - 11 && p.x <= ttx + 11;
-    const inY     = p.y >= tcy - 42 && p.y <= tcy + 2;
+    const tcy     = GROUND_Y - 80 + floatY; // base del inodoro (updated for larger canvas)
+    const inX     = p.x >= ttx - 16 && p.x <= ttx + 16;
+    const inY     = p.y >= tcy - 90 && p.y <= tcy + 2;
     if (inX && inY) {
       spawnExplosion(Math.round(p.x), Math.round(p.y), true);
       soundHit();
@@ -459,19 +452,38 @@ function endGame(victoria) {
 }
 
 function spawnExplosion(x, y, hit) {
-  const count = hit ? 30 : 14;
+  const count = hit ? 48 : 22;
+  const hitColors = ['#f5a020','#ffcc00','#ff6010','#e83000','#c8a000','#ffffff','#ffe080','#5a7a10'];
+  const missColors = ['#7a5820','#c89040','#a87030','#8a6028','#5a3a10'];
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 30 + Math.random() * (hit ? 100 : 60);
+    const speed = 40 + Math.random() * (hit ? 140 : 80);
+    const colorPool = hit ? hitColors : missColors;
     state.particulas.push({
       x, y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - (hit ? 60 : 20),
+      vy: Math.sin(angle) * speed - (hit ? 80 : 30),
       life: 1,
-      decay: 0.6 + Math.random() * 0.8,
-      color: hit ? PAL.expl[Math.floor(Math.random() * PAL.expl.length)] : PAL.smoke,
-      size: hit ? (2 + Math.random() * 3) : (1 + Math.random() * 2),
+      decay: 0.5 + Math.random() * 0.9,
+      color: colorPool[Math.floor(Math.random() * colorPool.length)],
+      size: hit ? (3 + Math.random() * 5) : (2 + Math.random() * 3),
     });
+  }
+  // Add water droplets on hit
+  if (hit) {
+    for (let i = 0; i < 16; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 20 + Math.random() * 60;
+      state.particulas.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 40,
+        life: 1,
+        decay: 0.7 + Math.random() * 0.5,
+        color: ['#38b8e8','#a8e4f8','#1888c0'][Math.floor(Math.random() * 3)],
+        size: 2 + Math.random() * 3,
+      });
+    }
   }
 }
 
@@ -488,9 +500,10 @@ function updateParticulas(dt) {
 
 // DIBUJO
 function draw() {
-  ctx.clearRect(0, 0, 640, 240);
+  ctx.clearRect(0, 0, CV_W, CV_H);
 
   drawSky();
+  drawHills();
   drawGround();
   drawTarget();
   drawButt();
@@ -500,32 +513,159 @@ function draw() {
   if (state.gameOver) drawOverlay();
 }
 
-function drawSky() {
-  const bands = [
-    [0,   60, '#0f0f1b'],
-    [60,  120, '#141428'],
-    [120, 170, '#181832'],
-    [170, 200, '#1a1e3a'],
-  ];
-  for (const [y0, y1, c] of bands) {
-    ctx.fillStyle = c;
-    ctx.fillRect(0, y0, 640, y1 - y0);
+function drawHills() {
+  // Helper: draw a filled hill silhouette using quadratic curves
+  function hillLayer(pts, fillColor, shadowColor) {
+    ctx.beginPath();
+    ctx.moveTo(0, CV_H);
+    ctx.lineTo(0, pts[0].y);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i + 1].x) / 2;
+      const my = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const last = pts[pts.length - 1];
+    ctx.lineTo(last.x, last.y);
+    ctx.lineTo(CV_W, last.y);
+    ctx.lineTo(CV_W, CV_H);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+
+    // Thin bright highlight stripe along crest
+    ctx.beginPath();
+    ctx.moveTo(0, pts[0].y);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i + 1].x) / 2;
+      const my = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const lastH = pts[pts.length - 1];
+    ctx.lineTo(lastH.x, lastH.y);
+    ctx.strokeStyle = shadowColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
-  ctx.fillStyle = '#ffffff';
-  const stars = [[40,10],[120,25],[200,8],[310,20],[400,5],[500,15],[580,30],[90,40],[260,35],[450,28],[600,12]];
-  for (const [sx, sy] of stars) {
-    ctx.fillRect(sx, sy, 1, 1);
+
+  // Layer 1 — distant pink/mauve mountains (tall, sharp)
+  hillLayer([
+    {x:0,   y:310}, {x:100, y:220}, {x:210, y:300}, {x:320, y:190},
+    {x:430, y:270}, {x:560, y:200}, {x:680, y:290}, {x:800, y:210},
+    {x:920, y:300}, {x:1060,y:195}, {x:1180,y:280}, {x:1300,y:210},
+    {x:1400,y:300},
+  ], '#c47898', '#e098b8');
+
+  // Layer 2 — mid purple-pink hills (rounder)
+  hillLayer([
+    {x:0,   y:350}, {x:120, y:295}, {x:250, y:340}, {x:390, y:280},
+    {x:520, y:345}, {x:650, y:295}, {x:790, y:350}, {x:940, y:290},
+    {x:1080,y:345}, {x:1220,y:295}, {x:1350,y:340}, {x:1400,y:320},
+  ], '#b07ab8', '#cc9acc');
+
+  // Layer 3 — near bright green hills
+  hillLayer([
+    {x:0,   y:395}, {x:140, y:355}, {x:290, y:388}, {x:440, y:348},
+    {x:590, y:390}, {x:730, y:352}, {x:870, y:393}, {x:1010,y:350},
+    {x:1150,y:392}, {x:1280,y:358}, {x:1400,y:395},
+  ], '#5eaa2e', '#80cc50');
+
+  // Layer 4 — foreground dark green low bumps
+  hillLayer([
+    {x:0,   y:425}, {x:160, y:405}, {x:330, y:422}, {x:500, y:402},
+    {x:670, y:428}, {x:840, y:404}, {x:1000,y:426}, {x:1160,y:406},
+    {x:1320,y:424}, {x:1400,y:412},
+  ], '#3d8820', '#5aa830');
+}
+
+function drawSky() {
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0,    '#2a7fc7');
+  grad.addColorStop(0.35, '#4ab8f0');
+  grad.addColorStop(0.75, '#8ed4f5');
+  grad.addColorStop(1,    '#c6eefa');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, CV_W, GROUND_Y);
+
+  // A few soft clouds
+  ctx.fillStyle = 'rgba(255,255,255,0.62)';
+  const clouds = [
+    [160, 60, 80, 22], [380, 40, 110, 28], [620, 80, 90, 20],
+    [900, 55, 130, 32], [1150, 70, 95, 24], [1320, 45, 75, 18],
+  ];
+  for (const [cx2, cy2, w, h] of clouds) {
+    ctx.beginPath();
+    ctx.ellipse(cx2,      cy2,      w * 0.5, h * 0.5,  0, 0, Math.PI * 2);
+    ctx.ellipse(cx2 + 28, cy2 - 10, w * 0.35, h * 0.6, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx2 - 24, cy2 - 6,  w * 0.3,  h * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
 function drawGround() {
-  ctx.fillStyle = PAL.dirt;
-  ctx.fillRect(0, GROUND_Y, 640, 40);
-  ctx.fillStyle = PAL.ground;
-  ctx.fillRect(0, GROUND_Y, 640, 6);
-  ctx.fillStyle = '#243d10';
-  for (let x = 0; x < 640; x += 16) {
-    ctx.fillRect(x, GROUND_Y + 2, 4, 2);
+  // Dark soil base (bottom fill)
+  ctx.fillStyle = '#3d2010';
+  ctx.fillRect(0, GROUND_Y + 30, CV_W, CV_H - GROUND_Y - 30);
+
+  // Brown earth layer
+  ctx.fillStyle = '#7a4820';
+  ctx.fillRect(0, GROUND_Y + 14, CV_W, 20);
+
+  // Pebble/rock texture in brown layer
+  ctx.fillStyle = '#5c3412';
+  for (let x = 12; x < CV_W; x += 48) {
+    ctx.beginPath();
+    ctx.ellipse(x, GROUND_Y + 22, 5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + 24, GROUND_Y + 28, 4, 2, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#8a5830';
+  for (let x = 30; x < CV_W; x += 60) {
+    ctx.beginPath();
+    ctx.ellipse(x, GROUND_Y + 18, 3, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Dark green sub-grass layer
+  ctx.fillStyle = '#2e6a14';
+  ctx.fillRect(0, GROUND_Y + 10, CV_W, 10);
+
+  // Bright grass top — wavy using quadratic curves
+  const waveAmp = 5;
+  const waveFreq = 80;
+  ctx.beginPath();
+  ctx.moveTo(0, CV_H);
+  ctx.lineTo(0, GROUND_Y + waveAmp);
+  for (let x = 0; x <= CV_W; x += waveFreq) {
+    const y1 = GROUND_Y + Math.sin((x / CV_W) * Math.PI * 8 + 0.3) * waveAmp;
+    const y2 = GROUND_Y + Math.sin(((x + waveFreq / 2) / CV_W) * Math.PI * 8 + 0.3) * waveAmp;
+    ctx.quadraticCurveTo(x + waveFreq / 4, y1 - 3, x + waveFreq / 2, y2);
+    ctx.quadraticCurveTo(x + waveFreq * 3 / 4, y2 + 3, x + waveFreq, GROUND_Y + Math.sin(((x + waveFreq) / CV_W) * Math.PI * 8 + 0.3) * waveAmp);
+  }
+  ctx.lineTo(CV_W, CV_H);
+  ctx.closePath();
+  ctx.fillStyle = '#4db825';
+  ctx.fill();
+
+  // Grass highlight stripe
+  ctx.strokeStyle = '#72dd40';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y - 1);
+  for (let x = 0; x <= CV_W; x += waveFreq) {
+    const y1 = GROUND_Y + Math.sin((x / CV_W) * Math.PI * 8 + 0.3) * waveAmp - 2;
+    ctx.quadraticCurveTo(x + waveFreq / 2, y1 - 4, x + waveFreq, GROUND_Y + Math.sin(((x + waveFreq) / CV_W) * Math.PI * 8 + 0.3) * waveAmp - 2);
+  }
+  ctx.stroke();
+
+  // Small grass blades (decorative tufts)
+  ctx.fillStyle = '#3aaa18';
+  for (let x = 20; x < CV_W; x += 38) {
+    const gy = GROUND_Y - 2;
+    ctx.fillRect(x,     gy - 5, 2, 5);
+    ctx.fillRect(x + 6, gy - 7, 2, 7);
+    ctx.fillRect(x + 12, gy - 4, 2, 4);
   }
 }
 
@@ -534,28 +674,100 @@ function drawButt() {
   const cy = GROUND_Y;
   const a = (state.angulo || 45);
 
-  ctx.fillStyle = PAL.butt;
-  ctx.fillRect(cx - 20, cy - 22, 18, 22);
-  ctx.fillRect(cx + 2, cy - 22, 18, 22);
+  // Shadow under butt
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 34, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  ctx.fillStyle = '#c8907a';
-  ctx.fillRect(cx - 2, cy - 20, 4, 20);
+  // LEFT cheek — highlight band
+  ctx.fillStyle = '#ffdfc4';
+  ctx.fillRect(cx - 36, cy - 44, 32, 6);
+  // LEFT cheek — main body
+  ctx.fillStyle = '#f0c8a0';
+  ctx.fillRect(cx - 36, cy - 38, 32, 38);
+  // LEFT cheek — shadow band right edge
+  ctx.fillStyle = '#c89870';
+  ctx.fillRect(cx - 8,  cy - 38, 6, 38);
+  // LEFT cheek — bottom shadow
+  ctx.fillStyle = '#b87a58';
+  ctx.fillRect(cx - 36, cy - 6, 32, 6);
 
-  ctx.fillStyle = '#ffd0b0';
-  ctx.fillRect(cx - 18, cy - 20, 5, 7);
-  ctx.fillRect(cx + 4, cy - 20, 5, 7);
+  // RIGHT cheek — highlight band
+  ctx.fillStyle = '#ffdfc4';
+  ctx.fillRect(cx + 4, cy - 44, 32, 6);
+  // RIGHT cheek — main body
+  ctx.fillStyle = '#f0c8a0';
+  ctx.fillRect(cx + 4, cy - 38, 32, 38);
+  // RIGHT cheek — shadow band right edge
+  ctx.fillStyle = '#c89870';
+  ctx.fillRect(cx + 30, cy - 38, 6, 38);
+  // RIGHT cheek — bottom shadow
+  ctx.fillStyle = '#b87a58';
+  ctx.fillRect(cx + 4, cy - 6, 32, 6);
 
-  ctx.fillStyle = '#d09080';
-  ctx.fillRect(cx - 20, cy - 4, 40, 4);
+  // Center crack
+  ctx.fillStyle = '#a06040';
+  ctx.fillRect(cx - 4, cy - 44, 8, 44);
+  ctx.fillStyle = '#7a4020';
+  ctx.fillRect(cx - 2, cy - 42, 4, 40);
 
+  // Dimples (highlight dots)
+  ctx.fillStyle = '#ffeedd';
+  ctx.fillRect(cx - 24, cy - 32, 6, 4);
+  ctx.fillRect(cx + 18, cy - 32, 6, 4);
+
+  // Skin fold lines
+  ctx.fillStyle = '#c89070';
+  ctx.fillRect(cx - 30, cy - 18, 20, 2);
+  ctx.fillRect(cx + 10, cy - 18, 20, 2);
+
+  // Base/seat band
+  ctx.fillStyle = '#8a5838';
+  ctx.fillRect(cx - 38, cy - 7, 76, 7);
+  ctx.fillStyle = '#6a3820';
+  ctx.fillRect(cx - 38, cy - 2, 76, 2);
+
+  // Cannon nozzle (rotated)
   ctx.save();
-  ctx.translate(cx, cy - 12);
+  ctx.translate(cx, cy - 26);
   ctx.rotate(-a * Math.PI / 180);
-  ctx.fillStyle = '#8a4050';
-  ctx.fillRect(0, -3, 14, 6);
-  ctx.fillStyle = '#5a1020';
-  ctx.fillRect(11, -4, 5, 8);
+
+  // Cannon barrel — main body
+  ctx.fillStyle = '#7a3040';
+  ctx.fillRect(0, -6, 36, 12);
+  // Barrel highlight top
+  ctx.fillStyle = '#a05070';
+  ctx.fillRect(0, -6, 36, 3);
+  // Barrel shadow bottom
+  ctx.fillStyle = '#501020';
+  ctx.fillRect(0, 3, 36, 3);
+  // Muzzle ring
+  ctx.fillStyle = '#c06080';
+  ctx.fillRect(32, -8, 6, 16);
+  ctx.fillStyle = '#802040';
+  ctx.fillRect(34, -9, 4, 18);
+  // Muzzle hole
+  ctx.fillStyle = '#200810';
+  ctx.fillRect(35, -3, 5, 6);
+  // Cannon band / strap
+  ctx.fillStyle = '#601830';
+  ctx.fillRect(12, -7, 5, 14);
+
   ctx.restore();
+
+  // Gas cloud when charging (idle puff)
+  if (state.charging || (state.fase === 'apuntando' && !state.gameOver)) {
+    const t = Date.now() / 400;
+    const puffAlpha = 0.18 + 0.12 * Math.sin(t);
+    ctx.fillStyle = `rgba(160,220,80,${puffAlpha})`;
+    ctx.beginPath();
+    ctx.ellipse(cx + 6, cy - 50, 14, 10, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 16, cy - 58, 10, 8, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawTarget() {
@@ -563,122 +775,202 @@ function drawTarget() {
   const tx = worldToScreen(state.distObj);
 
   if (state.objDestruido) {
-    // Ruinas del inodoro
+    // Ruinas del inodoro (debris scattered on ground)
+    const rx = Math.round(tx);
+    ctx.fillStyle = '#99aabb';
+    ctx.fillRect(rx - 22, GROUND_Y - 10, 16, 10);
+    ctx.fillRect(rx + 8,  GROUND_Y - 8,  14, 8);
     ctx.fillStyle = '#667788';
-    ctx.fillRect(tx - 16, GROUND_Y - 6, 14, 6);
-    ctx.fillRect(tx + 4,  GROUND_Y - 5, 12, 5);
-    ctx.fillStyle = '#334455';
-    ctx.fillRect(tx - 8,  GROUND_Y - 4, 6, 2);
-    ctx.fillRect(tx + 6,  GROUND_Y - 3, 5, 3);
+    ctx.fillRect(rx - 14, GROUND_Y - 6,  8,  4);
+    ctx.fillRect(rx + 12, GROUND_Y - 5,  7,  3);
+    ctx.fillStyle = '#aaccee';
+    ctx.fillRect(rx - 6,  GROUND_Y - 4,  5,  3);
+    // Small water puddle
+    ctx.fillStyle = 'rgba(60,160,220,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(rx, GROUND_Y - 1, 18, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
     return;
   }
 
-  const floatY = Math.sin(Date.now() / 700) * 7;
+  const floatY = Math.sin(Date.now() / 700) * 10;
   const cx = Math.round(tx);
-  const cy = Math.round(GROUND_Y - 50 + floatY); // base del inodoro
+  const cy = Math.round(GROUND_Y - 80 + floatY); // base del inodoro (higher up — larger canvas)
 
-  // Sombra en el suelo
-  const sa = (0.12 + 0.06 * Math.sin(Date.now() / 700)).toFixed(2);
-  ctx.fillStyle = `rgba(0,0,0,${sa})`;
-  ctx.fillRect(cx - 14, GROUND_Y - 3, 28, 3);
+  // Shadow on ground
+  const sa = (0.18 + 0.08 * Math.sin(Date.now() / 700));
+  ctx.fillStyle = `rgba(0,0,0,${sa.toFixed(2)})`;
+  ctx.beginPath();
+  ctx.ellipse(cx, GROUND_Y - 3, 28, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // ---- ALAS (plumas escalonadas, de afuera hacia adentro) ----
-  const feathers = [
-    { color: '#004d66', hl: '#007799', w: 30, dy: -29 }, // más alta y larga
-    { color: '#007799', hl: '#00aacc', w: 24, dy: -23 },
-    { color: '#00aacc', hl: '#33ccdd', w: 18, dy: -17 },
-    { color: '#33ccdd', hl: '#66eeff', w: 13, dy: -12 },
-    { color: '#66eeff', hl: '#aaffff', w:  8, dy:  -8 }, // más baja y corta
-  ];
-  for (const f of feathers) {
-    // ala izquierda
-    ctx.fillStyle = f.color;
-    ctx.fillRect(cx - 9 - f.w, cy + f.dy,     f.w, 5);
-    ctx.fillStyle = f.hl;
-    ctx.fillRect(cx - 9 - f.w, cy + f.dy,     f.w, 1); // brillo arriba
-    ctx.fillStyle = '#002233';
-    ctx.fillRect(cx - 9 - f.w, cy + f.dy + 4, f.w, 1); // sombra abajo
-    // ala derecha (espejo)
-    ctx.fillStyle = f.color;
-    ctx.fillRect(cx + 9,       cy + f.dy,     f.w, 5);
-    ctx.fillStyle = f.hl;
-    ctx.fillRect(cx + 9,       cy + f.dy,     f.w, 1);
-    ctx.fillStyle = '#002233';
-    ctx.fillRect(cx + 9,       cy + f.dy + 4, f.w, 1);
+  // ====== ANGEL WINGS (white, 32-bit style) ======
+  // Each wing: 5 feather rows, each row has 3 individual feather tips
+  // Wing shape arcs upward from body center
+
+  function drawWing(side) {
+    const s = side; // 1 = right, -1 = left
+    const base = s === 1 ? cx + 12 : cx - 12;
+
+    // Wing rows — from bottom (small) to top (large)
+    const rows = [
+      { dy: -10, feathers: [{w:14,h:9},{w:12,h:8},{w:10,h:7}],  gap: 2, arc: 0  },
+      { dy: -20, feathers: [{w:18,h:11},{w:16,h:10},{w:13,h:9}], gap: 2, arc: 6  },
+      { dy: -32, feathers: [{w:22,h:13},{w:20,h:12},{w:16,h:10}],gap: 2, arc: 12 },
+      { dy: -45, feathers: [{w:26,h:14},{w:24,h:13},{w:18,h:11}],gap: 2, arc: 16 },
+      { dy: -58, feathers: [{w:28,h:13},{w:25,h:12},{w:19,h:10}],gap: 2, arc: 14 },
+    ];
+
+    for (const row of rows) {
+      let xOff = s * (row.arc);
+      for (let fi = 0; fi < row.feathers.length; fi++) {
+        const f = row.feathers[fi];
+        const fx = base + s * (fi * (f.w + row.gap)) + xOff;
+        const fy = cy + row.dy;
+
+        // Feather shadow base
+        ctx.fillStyle = '#b8c8d8';
+        ctx.fillRect(
+          s === 1 ? fx : fx - f.w,
+          fy + 2, f.w, f.h
+        );
+        // Feather body
+        ctx.fillStyle = '#e8f4fc';
+        ctx.fillRect(
+          s === 1 ? fx : fx - f.w,
+          fy, f.w, f.h - 2
+        );
+        // Feather highlight top
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(
+          s === 1 ? fx : fx - f.w,
+          fy, f.w, 3
+        );
+        // Feather quill line
+        ctx.fillStyle = '#c8dce8';
+        ctx.fillRect(
+          s === 1 ? fx + Math.floor(f.w / 2) : fx - Math.floor(f.w / 2) - 1,
+          fy + 2, 1, f.h - 4
+        );
+        // Feather dark tip outline
+        ctx.fillStyle = '#8aaabb';
+        ctx.fillRect(
+          s === 1 ? fx : fx - f.w,
+          fy + f.h - 2, f.w, 2
+        );
+      }
+    }
+
+    // Wing base attachment (feather root, connects to toilet body)
+    ctx.fillStyle = '#d0e8f8';
+    ctx.fillRect(
+      s === 1 ? cx + 10 : cx - 18,
+      cy - 48, 8, 40
+    );
+    ctx.fillStyle = '#a8c4d8';
+    ctx.fillRect(
+      s === 1 ? cx + 15 : cx - 18,
+      cy - 48, 3, 40
+    );
   }
 
-  // ---- CUERPO DEL INODORO ----
-  const W  = '#d8eaf5'; // blanco cuerpo
-  const LG = '#a8c0d0'; // gris claro / sombra
-  const DK = '#1a2e3e'; // contorno oscuro
-  const TL = '#1e99bb'; // agua celeste
-  const T2 = '#1577a0'; // agua oscura
+  drawWing(-1); // left wing
+  drawWing(1);  // right wing
 
-  // BASE (pie)
-  ctx.fillStyle = W;
-  ctx.fillRect(cx - 6,  cy - 8,  12, 8);
-  ctx.fillStyle = LG;
-  ctx.fillRect(cx + 4,  cy - 8,  2,  8);  // sombra derecha
+  // ====== TOILET BODY (porcelain 32-bit) ======
+  const W   = '#dff0fa'; // porcelain white
+  const WH  = '#f4fafe'; // highlight white
+  const LG  = '#a8c4d8'; // shadow grey
+  const DK  = '#1a3040'; // dark outline
+  const TL  = '#38b8e8'; // water blue
+  const T2  = '#1888c0'; // water dark
+  const T3  = '#a8e4f8'; // water highlight
 
-  // TAZA (bowl)
-  ctx.fillStyle = W;
-  ctx.fillRect(cx - 9,  cy - 24, 18, 16);
-  ctx.fillStyle = LG;
-  ctx.fillRect(cx + 7,  cy - 24, 2,  16); // sombra derecha
-  ctx.fillRect(cx - 9,  cy - 24, 18, 2);  // aro superior del asiento
-
-  // Agujero interior
+  // BASE (pedestal foot)
   ctx.fillStyle = DK;
-  ctx.fillRect(cx - 7,  cy - 22, 14, 11);
-  // Agua
+  ctx.fillRect(cx - 12, cy - 16, 24, 16);
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 11, cy - 15, 22, 15);
+  ctx.fillStyle = WH;
+  ctx.fillRect(cx - 11, cy - 15, 22, 4);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 9,  cy - 15, 2, 15);
+
+  // BOWL (seat area)
+  ctx.fillStyle = DK;
+  ctx.fillRect(cx - 16, cy - 48, 32, 34);
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 15, cy - 47, 30, 32);
+  ctx.fillStyle = WH;
+  ctx.fillRect(cx - 15, cy - 47, 30, 5); // highlight rim
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 13, cy - 47, 2,  32); // shadow right
+  ctx.fillRect(cx - 15, cy - 17, 30, 3);  // shadow bottom rim
+
+  // Bowl seat ring
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx - 15, cy - 47, 30, 2);
+
+  // Inner bowl hole
+  ctx.fillStyle = DK;
+  ctx.fillRect(cx - 12, cy - 44, 24, 22);
+  // Water
   ctx.fillStyle = TL;
-  ctx.fillRect(cx - 6,  cy - 21, 12,  9);
+  ctx.fillRect(cx - 11, cy - 43, 22, 20);
+  // Water highlight
+  ctx.fillStyle = T3;
+  ctx.fillRect(cx - 10, cy - 43, 10, 4);
+  ctx.fillRect(cx - 9,  cy - 40, 6,  2);
+  // Water dark band
   ctx.fillStyle = T2;
-  ctx.fillRect(cx - 5,  cy - 14, 10,  2);
+  ctx.fillRect(cx - 10, cy - 25, 20, 4);
 
-  // TANQUE
-  ctx.fillStyle = W;
-  ctx.fillRect(cx - 7,  cy - 36, 14, 12);
-  ctx.fillStyle = LG;
-  ctx.fillRect(cx + 5,  cy - 36, 2,  12); // sombra derecha
-
-  // TAPA DEL TANQUE
-  ctx.fillStyle = W;
-  ctx.fillRect(cx - 8,  cy - 38, 16, 2);
-  ctx.fillStyle = LG;
-  ctx.fillRect(cx - 8,  cy - 37, 16, 1); // subsuelo tapa
-
-  // MANIJA
-  ctx.fillStyle = LG;
-  ctx.fillRect(cx - 1,  cy - 40, 2, 2);
-  ctx.fillRect(cx - 2,  cy - 41, 4, 1);
-
-  // CONTORNOS OSCUROS
+  // TANK
   ctx.fillStyle = DK;
-  ctx.fillRect(cx - 6,  cy - 8,  1,  8);   // base izq
-  ctx.fillRect(cx + 5,  cy - 8,  1,  8);   // base der
-  ctx.fillRect(cx - 6,  cy,      12, 1);   // base fondo
-  ctx.fillRect(cx - 9,  cy - 24, 1,  16);  // taza izq
-  ctx.fillRect(cx + 8,  cy - 24, 1,  16);  // taza der
-  ctx.fillRect(cx - 9,  cy - 8,  18, 1);   // taza fondo
-  ctx.fillRect(cx - 7,  cy - 36, 1,  12);  // tanque izq
-  ctx.fillRect(cx + 6,  cy - 36, 1,  12);  // tanque der
-  ctx.fillRect(cx - 7,  cy - 36, 14, 1);   // tanque tope
+  ctx.fillRect(cx - 13, cy - 80, 26, 34);
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 12, cy - 79, 24, 32);
+  ctx.fillStyle = WH;
+  ctx.fillRect(cx - 12, cy - 79, 24, 6);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 10, cy - 79, 2,  32);
 
-  // Etiqueta de distancia
-  ctx.fillStyle = PAL.dist;
-  ctx.font = '9px monospace';
+  // Tank lid
+  ctx.fillStyle = DK;
+  ctx.fillRect(cx - 14, cy - 83, 28, 5);
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 13, cy - 82, 26, 4);
+  ctx.fillStyle = WH;
+  ctx.fillRect(cx - 13, cy - 82, 26, 2);
+
+  // Handle knob on tank
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx - 2,  cy - 88, 4,  5);
+  ctx.fillRect(cx - 4,  cy - 89, 8,  2);
+  ctx.fillStyle = WH;
+  ctx.fillRect(cx - 1,  cy - 88, 2,  2);
+
+  // Small reflection shine on bowl
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillRect(cx - 13, cy - 46, 6, 2);
+  ctx.fillRect(cx - 13, cy - 44, 3, 2);
+
+  // Distance label
+  ctx.fillStyle = '#44aaff';
+  ctx.font = 'bold 13px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText(Math.round(state.distObj) + 'm', cx, cy - 48);
+  ctx.fillText(Math.round(state.distObj) + 'm', cx, cy - 98);
 }
 
 function drawTrail() {
   if (!state.proj) return;
   for (let i = 0; i < state.proj.trail.length; i++) {
     const p = state.proj.trail[i];
-    const alpha = (i / state.proj.trail.length) * 0.6;
-    ctx.fillStyle = `rgba(120, 64, 16, ${alpha})`;
-    ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+    const frac = i / state.proj.trail.length;
+    const alpha = frac * 0.7;
+    const size  = 1 + Math.round(frac * 3);
+    ctx.fillStyle = `rgba(180, 100, 30, ${alpha.toFixed(2)})`;
+    ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
   }
 }
 
@@ -687,14 +979,44 @@ function drawProjectile() {
   const p = state.proj;
   const x = Math.round(p.x);
   const y = Math.round(p.y);
-  ctx.fillStyle = PAL.proj;
-  ctx.fillRect(x - 4, y,     8, 3);
-  ctx.fillRect(x - 3, y - 3, 6, 3);
-  ctx.fillRect(x - 2, y - 5, 4, 3);
-  ctx.fillRect(x - 1, y - 7, 2, 2);
-  ctx.fillStyle = '#a05820';
-  ctx.fillRect(x - 3, y,     2, 2);
-  ctx.fillRect(x - 2, y - 3, 2, 2);
+
+  // Poop projectile — 32-bit, rounder and more detailed
+  // Dark outline
+  ctx.fillStyle = '#3a1a08';
+  ctx.fillRect(x - 7, y + 1,  14, 4);
+  ctx.fillRect(x - 6, y - 3,  12, 5);
+  ctx.fillRect(x - 4, y - 7,   8, 5);
+  ctx.fillRect(x - 3, y - 10,  6, 4);
+  ctx.fillRect(x - 2, y - 13,  4, 4);
+  ctx.fillRect(x - 1, y - 15,  2, 3);
+
+  // Main brown body
+  ctx.fillStyle = '#7a3c10';
+  ctx.fillRect(x - 6, y + 1,  12, 3);
+  ctx.fillRect(x - 5, y - 2,  10, 4);
+  ctx.fillRect(x - 3, y - 6,   6, 4);
+  ctx.fillRect(x - 2, y - 9,   4, 3);
+  ctx.fillRect(x - 1, y - 12,  2, 3);
+
+  // Warm mid-tone
+  ctx.fillStyle = '#c87840';
+  ctx.fillRect(x - 4, y + 1,   5, 2);
+  ctx.fillRect(x - 3, y - 2,   4, 3);
+  ctx.fillRect(x - 2, y - 5,   3, 3);
+
+  // Highlight dot
+  ctx.fillStyle = '#e8a860';
+  ctx.fillRect(x - 3, y,       3, 2);
+  ctx.fillRect(x - 2, y - 3,   2, 2);
+
+  // Tiny shine
+  ctx.fillStyle = '#ffe0a8';
+  ctx.fillRect(x - 2, y - 1,   2, 1);
+
+  // Swirl curl lines (dark)
+  ctx.fillStyle = '#5a2808';
+  ctx.fillRect(x,     y - 4,   2, 1);
+  ctx.fillRect(x - 1, y - 6,   3, 1);
 }
 
 function drawParticulas() {
@@ -708,12 +1030,21 @@ function drawParticulas() {
 }
 
 function drawOverlay() {
-  ctx.fillStyle = state.victoria ? 'rgba(0,80,0,0.45)' : 'rgba(80,0,0,0.45)';
-  ctx.fillRect(0, 0, 640, 240);
-  ctx.fillStyle = state.victoria ? '#f5c542' : '#ff4444';
-  ctx.font = 'bold 32px monospace';
+  ctx.fillStyle = state.victoria ? 'rgba(0,60,0,0.55)' : 'rgba(80,0,0,0.55)';
+  ctx.fillRect(0, 0, CV_W, CV_H);
+  const msg = state.victoria ? '¡VICTORIA!' : 'DERROTA';
+  ctx.font = 'bold 72px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText(state.victoria ? '¡VICTORIA!' : 'DERROTA', 320, 120);
+  // Shadow
+  ctx.fillStyle = state.victoria ? '#806010' : '#800000';
+  ctx.fillText(msg, CV_W / 2 + 4, CV_H / 2 + 4);
+  // Main text
+  ctx.fillStyle = state.victoria ? '#f5c542' : '#ff4444';
+  ctx.fillText(msg, CV_W / 2, CV_H / 2);
+  // Sub text
+  ctx.font = '28px monospace';
+  ctx.fillStyle = '#e8e8e8';
+  ctx.fillText(state.victoria ? '💩 Todo embarrado' : '💨 Pólvora desperdiciada', CV_W / 2, CV_H / 2 + 60);
 }
 
 // Bucle idle: actualiza potencia y redibuja mientras no hay animación activa
