@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>FUEGO GÁSTRICO</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f1b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: monospace;
+    color: #e8e8e8;
+  }
+  h1 {
+    font-size: 28px;
+    color: #f5c542;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px #a0801a;
+  }
+  #subtitle {
+    font-size: 11px;
+    color: #7a7a9a;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+  canvas {
+    border: 2px solid #3a3a5c;
+    image-rendering: pixelated;
+    display: block;
+  }
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    width: 640px;
+    margin-top: 10px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #aaaacc;
+  }
+  #hud span { color: #f5c542; }
+  #panel {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #panel label { font-size: 13px; letter-spacing: 1px; color: #c0c0e0; }
+  #angle-input {
+    background: #1a1a2e;
+    border: 2px solid #3a3a5c;
+    color: #f5c542;
+    font-family: monospace;
+    font-size: 20px;
+    width: 80px;
+    text-align: center;
+    padding: 4px;
+    outline: none;
+  }
+  #angle-input:focus { border-color: #f5c542; }
+  #fire-btn {
+    background: #8b1a1a;
+    border: 2px solid #cc3333;
+    color: #fff;
+    font-family: monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 6px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    user-select: none;
+  }
+  #fire-btn:hover:not(:disabled) { background: #cc3333; }
+  #fire-btn:disabled { opacity: 0.4; cursor: default; }
+  #message {
+    margin-top: 10px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    min-height: 22px;
+    color: #e8e8e8;
+    text-align: center;
+  }
+  #restart-btn {
+    display: none;
+    margin-top: 10px;
+    background: #1a5c1a;
+    border: 2px solid #33cc33;
+    color: #fff;
+    font-family: monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 6px 24px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  #restart-btn:hover { background: #33cc33; }
+
+  /* Barra de potencia */
+  #power-bar-wrap {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #c0c0e0;
+    width: 640px;
+  }
+  #power-bar-track {
+    flex: 1;
+    height: 14px;
+    background: #1a1a2e;
+    border: 2px solid #3a3a5c;
+    position: relative;
+    overflow: hidden;
+  }
+  #power-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #444;
+    transition: none;
+  }
+  #power-pct {
+    min-width: 38px;
+    text-align: right;
+    color: #aaaacc;
+  }
+</style>
+</head>
+<body>
+
+<h1>&#x1F525; FUEGO GÁSTRICO</h1>
+<div id="subtitle">LOW-BIT FLATULENCE</div>
+
+<canvas id="cv" width="640" height="240"></canvas>
+
+<div id="hud">
+  <div>OBJETIVOS: <span id="hud-obj">3</span></div>
+  <div>TIROS: <span id="hud-shots">5</span></div>
+  <div>POTENCIA: <span id="hud-power">0%</span></div>
+  <div>DISTANCIA: <span id="hud-dist">???</span>m</div>
+</div>
+
+<div id="panel">
+  <label>ÁNGULO:</label>
+  <input id="angle-input" type="number" min="1" max="89" value="45" step="1">
+  <button id="fire-btn">&#x1F4A8; ¡FUEGO!</button>
+</div>
+
+<div id="power-bar-wrap">
+  <span>POTENCIA:</span>
+  <div id="power-bar-track">
+    <div id="power-bar-fill"></div>
+  </div>
+  <span id="power-pct">0%</span>
+</div>
+
+<div id="message">Mantén ESPACIO o el botón para cargar y suelta para disparar</div>
+<button id="restart-btn">&#x21BA; OTRA VEZ</button>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+// Paleta low-bit
+const PAL = {
+  sky:    '#1a1a2e',
+  skylow: '#16213e',
+  ground: '#2d5016',
+  dirt:   '#3d2b1f',
+  butt:   '#f0c0a0',
+  proj:   '#7a4010',
+  smoke:  '#5a7a10',
+  expl:   ['#7a4010','#a06820','#5a7a10','#c0a020'],
+  target: '#cc3333',
+  targetd:'#5a1a1a',
+  dist:   '#44aaff',
+  aim:    '#ffffff33',
+};
+
+// Estado del juego
+let state = {};
+
+function initGame() {
+  state = {
+    objetivos: 3,
+    oportunidades: 5,
+    fase: 'apuntando', // apuntando | disparando | resultado
+    alcance: 0,
+    distObj: 0,
+    objDestruido: false,
+    particulas: [],
+    proj: null,
+    angulo: 45,
+    disparoNum: 0,
+    gameOver: false,
+    victoria: false,
+    shotsTotal: 0,
+    power: 0,
+    charging: false,
+    chargeStart: null,
+  };
+  newObjective();
+}
+
+function newObjective() {
+  state.oportunidades = 5;
+  state.objDestruido = false;
+  state.alcance = 10000 + Math.random() * 40000;
+  state.distObj = 5000 + Math.random() * (state.alcance - 5000);
+  state.particulas = [];
+  state.proj = null;
+  state.fase = 'apuntando';
+  state.power = 0;
+  state.charging = false;
+  state.chargeStart = null;
+  updateHUD();
+  updatePowerBar();
+  setMessage('Objetivo a <span style="color:#44aaff">' + Math.round(state.distObj) + 'm</span>. Mantén ESPACIO para cargar potencia.');
+  document.getElementById('hud-dist').textContent = Math.round(state.distObj) + 'm';
+  enableInput(true);
+}
+
+function updateHUD() {
+  document.getElementById('hud-obj').textContent = state.objetivos;
+  document.getElementById('hud-shots').textContent = state.oportunidades;
+}
+
+function updatePowerBar() {
+  const pct = Math.round(state.power * 100);
+  const fill = document.getElementById('power-bar-fill');
+  const pctEl = document.getElementById('power-pct');
+  const hudPower = document.getElementById('hud-power');
+
+  fill.style.width = pct + '%';
+
+  // Color según nivel
+  if (state.charging) {
+    if (pct <= 40) {
+      fill.style.background = '#33cc33';
+    } else if (pct <= 70) {
+      fill.style.background = '#f5c542';
+    } else {
+      fill.style.background = '#cc3333';
+    }
+  } else {
+    fill.style.background = '#555577';
+  }
+
+  pctEl.textContent = pct + '%';
+  hudPower.textContent = pct + '%';
+}
+
+function setMessage(html) {
+  document.getElementById('message').innerHTML = html;
+}
+
+function enableInput(on) {
+  document.getElementById('angle-input').disabled = !on;
+  document.getElementById('fire-btn').disabled = !on;
+}
+
+// Física
+const G = 9.8;
+const CANNON_X = 30;
+const GROUND_Y = 200;
+
+function worldToScreen(dist) {
+  return CANNON_X + (dist / state.alcance) * (620 - CANNON_X);
+}
+
+function fire(angleDeg) {
+  const MAX_V0 = Math.sqrt(state.alcance * G);
+  const power = Math.max(state.power, 0.05); // mínimo 5%
+  const v0 = power * MAX_V0;
+  const rad = angleDeg * Math.PI / 180;
+  const vx = v0 * Math.cos(rad);
+  const vy = v0 * Math.sin(rad);
+  const tiempoVuelo = (2 * vy) / G;
+  const alcanceReal = vx * tiempoVuelo;
+
+  state.proj = {
+    t: 0,
+    tMax: tiempoVuelo,
+    vx, vy,
+    alcanceReal,
+    angleDeg,
+    x: CANNON_X,
+    y: GROUND_Y,
+    trail: [],
+    exploded: false,
+  };
+  soundFire();
+  state.fase = 'disparando';
+  state.charging = false;
+  enableInput(false);
+  animating = true;
+}
+
+function startCharge() {
+  if (state.fase !== 'apuntando') return;
+  if (state.charging) return;
+  state.charging = true;
+  state.chargeStart = Date.now();
+}
+
+function releaseAndFire() {
+  if (!state.charging) return;
+  state.charging = false;
+  if (state.fase !== 'apuntando') return;
+  const a = parseFloat(document.getElementById('angle-input').value);
+  if (isNaN(a) || a < 0.5 || a > 89.5) {
+    setMessage('<span style="color:#ff8800">Ángulo debe estar entre 1° y 89°.</span>');
+    return;
+  }
+  state.angulo = a;
+  fire(a);
+  lastTime = null;
+  requestAnimationFrame(animate);
+}
+
+// Animación
+let animating = false;
+let lastTime = null;
+
+function animate(ts) {
+  if (!animating) return;
+  if (!lastTime) lastTime = ts;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+
+  update(dt);
+  draw();
+  requestAnimationFrame(animate);
+}
+
+function update(dt) {
+  // Actualizar potencia si está cargando
+  if (state.charging && state.chargeStart !== null) {
+    const elapsed = (Date.now() - state.chargeStart) / 1000;
+    state.power = Math.min(elapsed / 1.25, 1.0);
+    updatePowerBar();
+  }
+
+  updateParticulas(dt);
+
+  if (state.fase !== 'disparando' || !state.proj) return;
+  const p = state.proj;
+  p.t += dt * 67.5;
+
+  const t = p.t;
+  const rx = p.vx * t;
+  const ry = p.vy * t - 0.5 * G * t * t;
+
+  p.x = worldToScreen(rx);
+  p.y = GROUND_Y - (ry / state.alcance) * 400;
+
+  p.trail.push({ x: p.x, y: p.y, a: 0.8 });
+  if (p.trail.length > 18) p.trail.shift();
+
+  // Colisión con el inodoro flotante (hitbox en coordenadas de pantalla)
+  if (!state.objDestruido) {
+    const floatY  = Math.sin(Date.now() / 700) * 7;
+    const ttx     = worldToScreen(state.distObj);
+    const tcy     = GROUND_Y - 50 + floatY; // base del inodoro
+    const inX     = p.x >= ttx - 11 && p.x <= ttx + 11;
+    const inY     = p.y >= tcy - 42 && p.y <= tcy + 2;
+    if (inX && inY) {
+      spawnExplosion(Math.round(p.x), Math.round(p.y), true);
+      soundHit();
+      state.proj  = null;
+      state.fase  = 'resultado';
+      state.oportunidades--;
+      state.shotsTotal++;
+      setTimeout(() => {
+        state.objDestruido = true;
+        setMessage('<span style="color:#33ff33">&#x1F4A9; ¡OBJETIVO ALCANZADO!</span>');
+        setTimeout(() => nextPhase(true), 1500);
+      }, 600);
+      return;
+    }
+  }
+
+  // Tocó el suelo → siempre fallo (el inodoro está en el aire)
+  if (p.t > 0 && (t >= p.tMax || p.y >= GROUND_Y)) {
+    p.y = GROUND_Y;
+    const impactoMetros = p.alcanceReal;
+    const diff   = impactoMetros - state.distObj;
+    const dir    = diff > 0 ? 'pasaste' : 'te quedaste corto';
+    const errMsg = `Error: ${Math.round(Math.abs(diff))}m (${dir})`;
+
+    spawnExplosion(p.x, GROUND_Y, false);
+    soundMiss();
+    state.proj  = null;
+    state.fase  = 'resultado';
+    state.oportunidades--;
+    state.shotsTotal++;
+
+    setTimeout(() => {
+      if (state.oportunidades <= 0) {
+        setMessage(`<span style="color:#ff4444">&#x2716; Sin tiros. ${errMsg}</span>`);
+        setTimeout(() => nextPhase(false), 1500);
+      } else {
+        setMessage(`<span style="color:#ffaa44">&#x25CB; Fallo. ${errMsg} — ${state.oportunidades} tiro(s) restantes.</span>`);
+        state.fase = 'apuntando';
+        state.power = 0;
+        state.charging = false;
+        state.chargeStart = null;
+        updateHUD();
+        updatePowerBar();
+        enableInput(true);
+      }
+    }, 600);
+  }
+}
+
+function nextPhase(exito) {
+  if (!exito) {
+    state.objetivos--;
+  } else {
+    state.objetivos--;
+  }
+  updateHUD();
+  if (state.objetivos <= 0) {
+    if (exito || state.objDestruido) {
+      endGame(true);
+    } else {
+      endGame(false);
+    }
+    return;
+  }
+  if (!exito && !state.objDestruido) {
+    // continúa pero con objetivos perdidos
+  }
+  newObjective();
+}
+
+function endGame(victoria) {
+  state.gameOver = true;
+  state.victoria = victoria;
+  state.charging = false;
+  enableInput(false);
+  animating = false;
+  draw();
+  if (victoria) {
+    soundVictory();
+    setMessage('<span style="color:#f5c542">&#x1F4A9; ¡VICTORIA! Todo embarrado.</span>');
+  } else {
+    soundDefeat();
+    setMessage('<span style="color:#ff4444">&#x1F4A8; DERROTA. Pólvora desperdiciada.</span>');
+  }
+  document.getElementById('restart-btn').style.display = 'inline-block';
+}
+
+function spawnExplosion(x, y, hit) {
+  const count = hit ? 30 : 14;
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 30 + Math.random() * (hit ? 100 : 60);
+    state.particulas.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - (hit ? 60 : 20),
+      life: 1,
+      decay: 0.6 + Math.random() * 0.8,
+      color: hit ? PAL.expl[Math.floor(Math.random() * PAL.expl.length)] : PAL.smoke,
+      size: hit ? (2 + Math.random() * 3) : (1 + Math.random() * 2),
+    });
+  }
+}
+
+function updateParticulas(dt) {
+  for (let i = state.particulas.length - 1; i >= 0; i--) {
+    const p = state.particulas[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 80 * dt;
+    p.life -= p.decay * dt;
+    if (p.life <= 0) state.particulas.splice(i, 1);
+  }
+}
+
+// DIBUJO
+function draw() {
+  ctx.clearRect(0, 0, 640, 240);
+
+  drawSky();
+  drawGround();
+  drawTarget();
+  drawButt();
+  drawTrail();
+  drawProjectile();
+  drawParticulas();
+  if (state.gameOver) drawOverlay();
+}
+
+function drawSky() {
+  const bands = [
+    [0,   60, '#0f0f1b'],
+    [60,  120, '#141428'],
+    [120, 170, '#181832'],
+    [170, 200, '#1a1e3a'],
+  ];
+  for (const [y0, y1, c] of bands) {
+    ctx.fillStyle = c;
+    ctx.fillRect(0, y0, 640, y1 - y0);
+  }
+  ctx.fillStyle = '#ffffff';
+  const stars = [[40,10],[120,25],[200,8],[310,20],[400,5],[500,15],[580,30],[90,40],[260,35],[450,28],[600,12]];
+  for (const [sx, sy] of stars) {
+    ctx.fillRect(sx, sy, 1, 1);
+  }
+}
+
+function drawGround() {
+  ctx.fillStyle = PAL.dirt;
+  ctx.fillRect(0, GROUND_Y, 640, 40);
+  ctx.fillStyle = PAL.ground;
+  ctx.fillRect(0, GROUND_Y, 640, 6);
+  ctx.fillStyle = '#243d10';
+  for (let x = 0; x < 640; x += 16) {
+    ctx.fillRect(x, GROUND_Y + 2, 4, 2);
+  }
+}
+
+function drawButt() {
+  const cx = CANNON_X;
+  const cy = GROUND_Y;
+  const a = (state.angulo || 45);
+
+  ctx.fillStyle = PAL.butt;
+  ctx.fillRect(cx - 20, cy - 22, 18, 22);
+  ctx.fillRect(cx + 2, cy - 22, 18, 22);
+
+  ctx.fillStyle = '#c8907a';
+  ctx.fillRect(cx - 2, cy - 20, 4, 20);
+
+  ctx.fillStyle = '#ffd0b0';
+  ctx.fillRect(cx - 18, cy - 20, 5, 7);
+  ctx.fillRect(cx + 4, cy - 20, 5, 7);
+
+  ctx.fillStyle = '#d09080';
+  ctx.fillRect(cx - 20, cy - 4, 40, 4);
+
+  ctx.save();
+  ctx.translate(cx, cy - 12);
+  ctx.rotate(-a * Math.PI / 180);
+  ctx.fillStyle = '#8a4050';
+  ctx.fillRect(0, -3, 14, 6);
+  ctx.fillStyle = '#5a1020';
+  ctx.fillRect(11, -4, 5, 8);
+  ctx.restore();
+}
+
+function drawTarget() {
+  if (!state.distObj) return;
+  const tx = worldToScreen(state.distObj);
+
+  if (state.objDestruido) {
+    // Ruinas del inodoro
+    ctx.fillStyle = '#667788';
+    ctx.fillRect(tx - 16, GROUND_Y - 6, 14, 6);
+    ctx.fillRect(tx + 4,  GROUND_Y - 5, 12, 5);
+    ctx.fillStyle = '#334455';
+    ctx.fillRect(tx - 8,  GROUND_Y - 4, 6, 2);
+    ctx.fillRect(tx + 6,  GROUND_Y - 3, 5, 3);
+    return;
+  }
+
+  const floatY = Math.sin(Date.now() / 700) * 7;
+  const cx = Math.round(tx);
+  const cy = Math.round(GROUND_Y - 50 + floatY); // base del inodoro
+
+  // Sombra en el suelo
+  const sa = (0.12 + 0.06 * Math.sin(Date.now() / 700)).toFixed(2);
+  ctx.fillStyle = `rgba(0,0,0,${sa})`;
+  ctx.fillRect(cx - 14, GROUND_Y - 3, 28, 3);
+
+  // ---- ALAS (plumas escalonadas, de afuera hacia adentro) ----
+  const feathers = [
+    { color: '#004d66', hl: '#007799', w: 30, dy: -29 }, // más alta y larga
+    { color: '#007799', hl: '#00aacc', w: 24, dy: -23 },
+    { color: '#00aacc', hl: '#33ccdd', w: 18, dy: -17 },
+    { color: '#33ccdd', hl: '#66eeff', w: 13, dy: -12 },
+    { color: '#66eeff', hl: '#aaffff', w:  8, dy:  -8 }, // más baja y corta
+  ];
+  for (const f of feathers) {
+    // ala izquierda
+    ctx.fillStyle = f.color;
+    ctx.fillRect(cx - 9 - f.w, cy + f.dy,     f.w, 5);
+    ctx.fillStyle = f.hl;
+    ctx.fillRect(cx - 9 - f.w, cy + f.dy,     f.w, 1); // brillo arriba
+    ctx.fillStyle = '#002233';
+    ctx.fillRect(cx - 9 - f.w, cy + f.dy + 4, f.w, 1); // sombra abajo
+    // ala derecha (espejo)
+    ctx.fillStyle = f.color;
+    ctx.fillRect(cx + 9,       cy + f.dy,     f.w, 5);
+    ctx.fillStyle = f.hl;
+    ctx.fillRect(cx + 9,       cy + f.dy,     f.w, 1);
+    ctx.fillStyle = '#002233';
+    ctx.fillRect(cx + 9,       cy + f.dy + 4, f.w, 1);
+  }
+
+  // ---- CUERPO DEL INODORO ----
+  const W  = '#d8eaf5'; // blanco cuerpo
+  const LG = '#a8c0d0'; // gris claro / sombra
+  const DK = '#1a2e3e'; // contorno oscuro
+  const TL = '#1e99bb'; // agua celeste
+  const T2 = '#1577a0'; // agua oscura
+
+  // BASE (pie)
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 6,  cy - 8,  12, 8);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 4,  cy - 8,  2,  8);  // sombra derecha
+
+  // TAZA (bowl)
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 9,  cy - 24, 18, 16);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 7,  cy - 24, 2,  16); // sombra derecha
+  ctx.fillRect(cx - 9,  cy - 24, 18, 2);  // aro superior del asiento
+
+  // Agujero interior
+  ctx.fillStyle = DK;
+  ctx.fillRect(cx - 7,  cy - 22, 14, 11);
+  // Agua
+  ctx.fillStyle = TL;
+  ctx.fillRect(cx - 6,  cy - 21, 12,  9);
+  ctx.fillStyle = T2;
+  ctx.fillRect(cx - 5,  cy - 14, 10,  2);
+
+  // TANQUE
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 7,  cy - 36, 14, 12);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx + 5,  cy - 36, 2,  12); // sombra derecha
+
+  // TAPA DEL TANQUE
+  ctx.fillStyle = W;
+  ctx.fillRect(cx - 8,  cy - 38, 16, 2);
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx - 8,  cy - 37, 16, 1); // subsuelo tapa
+
+  // MANIJA
+  ctx.fillStyle = LG;
+  ctx.fillRect(cx - 1,  cy - 40, 2, 2);
+  ctx.fillRect(cx - 2,  cy - 41, 4, 1);
+
+  // CONTORNOS OSCUROS
+  ctx.fillStyle = DK;
+  ctx.fillRect(cx - 6,  cy - 8,  1,  8);   // base izq
+  ctx.fillRect(cx + 5,  cy - 8,  1,  8);   // base der
+  ctx.fillRect(cx - 6,  cy,      12, 1);   // base fondo
+  ctx.fillRect(cx - 9,  cy - 24, 1,  16);  // taza izq
+  ctx.fillRect(cx + 8,  cy - 24, 1,  16);  // taza der
+  ctx.fillRect(cx - 9,  cy - 8,  18, 1);   // taza fondo
+  ctx.fillRect(cx - 7,  cy - 36, 1,  12);  // tanque izq
+  ctx.fillRect(cx + 6,  cy - 36, 1,  12);  // tanque der
+  ctx.fillRect(cx - 7,  cy - 36, 14, 1);   // tanque tope
+
+  // Etiqueta de distancia
+  ctx.fillStyle = PAL.dist;
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.round(state.distObj) + 'm', cx, cy - 48);
+}
+
+function drawTrail() {
+  if (!state.proj) return;
+  for (let i = 0; i < state.proj.trail.length; i++) {
+    const p = state.proj.trail[i];
+    const alpha = (i / state.proj.trail.length) * 0.6;
+    ctx.fillStyle = `rgba(120, 64, 16, ${alpha})`;
+    ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+  }
+}
+
+function drawProjectile() {
+  if (!state.proj) return;
+  const p = state.proj;
+  const x = Math.round(p.x);
+  const y = Math.round(p.y);
+  ctx.fillStyle = PAL.proj;
+  ctx.fillRect(x - 4, y,     8, 3);
+  ctx.fillRect(x - 3, y - 3, 6, 3);
+  ctx.fillRect(x - 2, y - 5, 4, 3);
+  ctx.fillRect(x - 1, y - 7, 2, 2);
+  ctx.fillStyle = '#a05820';
+  ctx.fillRect(x - 3, y,     2, 2);
+  ctx.fillRect(x - 2, y - 3, 2, 2);
+}
+
+function drawParticulas() {
+  for (const p of state.particulas) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    const s = Math.ceil(p.size);
+    ctx.fillRect(Math.round(p.x) - s/2, Math.round(p.y) - s/2, s, s);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawOverlay() {
+  ctx.fillStyle = state.victoria ? 'rgba(0,80,0,0.45)' : 'rgba(80,0,0,0.45)';
+  ctx.fillRect(0, 0, 640, 240);
+  ctx.fillStyle = state.victoria ? '#f5c542' : '#ff4444';
+  ctx.font = 'bold 32px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(state.victoria ? '¡VICTORIA!' : 'DERROTA', 320, 120);
+}
+
+// Bucle idle: actualiza potencia y redibuja mientras no hay animación activa
+function idleDraw() {
+  if (!animating) {
+    // Actualizar potencia si está cargando en idle
+    if (state.charging && state.chargeStart !== null) {
+      const elapsed = (Date.now() - state.chargeStart) / 1000;
+      state.power = Math.min(elapsed / 1.25, 1.0);
+      updatePowerBar();
+    }
+    draw();
+    requestAnimationFrame(idleDraw);
+  }
+}
+
+// ── AUDIO (Web Audio API — procedural) ──────────────────────────────────────
+let audioCtx = null;
+function getAC() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function soundFire() {
+  const ac = getAC();
+  const bufLen = Math.round(ac.sampleRate * 0.25);
+  const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+
+  const filter = ac.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(300, ac.currentTime);
+  filter.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.25);
+  filter.Q.value = 1.5;
+
+  const gain = ac.createGain();
+  gain.gain.setValueAtTime(0.7, ac.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.25);
+
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ac.destination);
+  src.start();
+  src.stop(ac.currentTime + 0.25);
+}
+
+function soundHit() {
+  const ac = getAC();
+  const now = ac.currentTime;
+
+  // Splash: noise lowpass descendente
+  const bufLen = Math.round(ac.sampleRate * 0.4);
+  const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+
+  const filt = ac.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.setValueAtTime(800, now);
+  filt.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+
+  const gSplash = ac.createGain();
+  gSplash.gain.setValueAtTime(0.6, now);
+  gSplash.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+  src.connect(filt);
+  filt.connect(gSplash);
+  gSplash.connect(ac.destination);
+  src.start(now);
+  src.stop(now + 0.4);
+
+  // Flush: oscilador square retardado (cisterna)
+  const osc = ac.createOscillator();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(600, now + 0.1);
+  osc.frequency.exponentialRampToValueAtTime(200, now + 0.5);
+
+  const gFlush = ac.createGain();
+  gFlush.gain.setValueAtTime(0, now);
+  gFlush.gain.setValueAtTime(0.35, now + 0.1);
+  gFlush.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+  osc.connect(gFlush);
+  gFlush.connect(ac.destination);
+  osc.start(now + 0.1);
+  osc.stop(now + 0.5);
+}
+
+function soundMiss() {
+  const ac = getAC();
+  const now = ac.currentTime;
+
+  // Thud: sine grave descendente
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+
+  const gThud = ac.createGain();
+  gThud.gain.setValueAtTime(0.8, now);
+  gThud.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+  osc.connect(gThud);
+  gThud.connect(ac.destination);
+  osc.start(now);
+  osc.stop(now + 0.3);
+
+  // Textura: noise corto lowpass
+  const bufLen = Math.round(ac.sampleRate * 0.15);
+  const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+  const noiseData = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) noiseData[i] = Math.random() * 2 - 1;
+
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+
+  const filt = ac.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.value = 400;
+
+  const gNoise = ac.createGain();
+  gNoise.gain.setValueAtTime(0.4, now);
+  gNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+  src.connect(filt);
+  filt.connect(gNoise);
+  gNoise.connect(ac.destination);
+  src.start(now);
+  src.stop(now + 0.15);
+}
+
+function soundVictory() {
+  const ac = getAC();
+  const notes = [523, 659, 784]; // C5, E5, G5
+  notes.forEach((freq, i) => {
+    const t = ac.currentTime + i * 0.15;
+    const osc = ac.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.35, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+    osc.connect(g);
+    g.connect(ac.destination);
+    osc.start(t);
+    osc.stop(t + 0.15);
+  });
+}
+
+function soundDefeat() {
+  const ac = getAC();
+  const notes = [392, 330, 277]; // G4, E4, Db4
+  notes.forEach((freq, i) => {
+    const t = ac.currentTime + i * 0.2;
+    const osc = ac.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+    osc.connect(g);
+    g.connect(ac.destination);
+    osc.start(t);
+    osc.stop(t + 0.2);
+  });
+}
+
+// Eventos — botón fuego: mousedown inicia carga, mouseup en document dispara
+const fireBtn = document.getElementById('fire-btn');
+
+fireBtn.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  startCharge();
+});
+
+// mouseup en document para capturar la suelta aunque el cursor salga del botón
+document.addEventListener('mouseup', (e) => {
+  if (state.charging) {
+    releaseAndFire();
+  }
+});
+
+// Flechas arriba/abajo para el ángulo
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const input = document.getElementById('angle-input');
+    let val = parseFloat(input.value) || 45;
+    val = e.key === 'ArrowUp' ? Math.min(val + 1, 89) : Math.max(val - 1, 1);
+    input.value = val;
+    state.angulo = val;
+  }
+});
+
+// Espaciadora
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.code === 'Space') {
+    e.preventDefault();
+    startCharge();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === ' ' || e.code === 'Space') {
+    e.preventDefault();
+    releaseAndFire();
+  }
+});
+
+document.getElementById('angle-input').addEventListener('input', () => {
+  state.angulo = parseFloat(document.getElementById('angle-input').value) || 45;
+});
+
+document.getElementById('angle-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    // Enter en el input también dispara (si ya estaba cargando, suelta; si no, carga y suelta rápido)
+    if (!state.charging) startCharge();
+    releaseAndFire();
+  }
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  document.getElementById('restart-btn').style.display = 'none';
+  initGame();
+  animating = false;
+  requestAnimationFrame(idleDraw);
+});
+
+// Inicio
+initGame();
+requestAnimationFrame(idleDraw);
+</script>
+</body>
+</html>
