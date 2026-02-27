@@ -730,6 +730,16 @@ function drawGround() {
   // Brown earth layer
   ctx.fillStyle = '#7a4820';
   ctx.fillRect(0, GROUND_Y + 14, CV_W, 20);
+  // Decorative brick border at very top of ground
+  ctx.fillStyle = '#8a5228';
+  for (let x = 0; x < CV_W; x += 19) {
+    ctx.fillRect(x + 1, GROUND_Y + 1, 18, 11);
+  }
+  ctx.fillStyle = '#5c3010';
+  for (let x = 0; x < CV_W; x += 19) {
+    ctx.fillRect(x, GROUND_Y, 1, 13);
+  }
+  ctx.fillRect(0, GROUND_Y + 12, CV_W, 2);
   // Pebble texture
   ctx.fillStyle = '#5c3412';
   for (let x = 12; x < CV_W; x += 48) {
