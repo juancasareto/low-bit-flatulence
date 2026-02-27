@@ -288,7 +288,7 @@ function worldToScreen(dist) {
 function fire(angleDeg) {
   const MAX_V0 = Math.sqrt(state.alcance * G);
   const power = Math.max(state.power, 0.05); // mínimo 5%
-  const v0 = power * MAX_V0;
+  const v0 = power * MAX_V0 * 1.5;
   const rad = angleDeg * Math.PI / 180;
   const vx = v0 * Math.cos(rad);
   const vy = v0 * Math.sin(rad);
