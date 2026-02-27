@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>FUEGO GÁSTRICO</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,6 +35,7 @@
     image-rendering: pixelated;
     display: block;
     max-width: 100%;
+    height: auto;
   }
   #hud {
     display: flex;
@@ -135,6 +137,21 @@
     min-width: 38px;
     text-align: right;
     color: #aaaacc;
+  }
+
+  /* ── Mobile landscape ── */
+  @media screen and (max-height: 500px) {
+    h1 { font-size: 16px; letter-spacing: 3px; margin-bottom: 1px; }
+    #subtitle { display: none; }
+    canvas { max-height: 55vh; width: auto; }
+    #hud { margin-top: 3px; font-size: 11px; }
+    #panel { margin-top: 3px; gap: 6px; }
+    #angle-input { font-size: 16px; width: 60px; padding: 2px; }
+    #fire-btn { font-size: 13px; padding: 5px 14px; }
+    #power-bar-wrap { margin-top: 3px; }
+    #power-bar-track { height: 12px; }
+    #message { margin-top: 3px; font-size: 11px; min-height: 14px; }
+    #restart-btn { margin-top: 3px; font-size: 12px; padding: 5px 18px; }
   }
 </style>
 </head>
@@ -1092,6 +1109,20 @@ document.addEventListener('mouseup', (e) => {
   if (state.charging) {
     releaseAndFire();
   }
+});
+
+// Touch events para mobile
+fireBtn.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  startCharge();
+}, { passive: false });
+
+document.addEventListener('touchend', () => {
+  if (state.charging) releaseAndFire();
+});
+
+document.addEventListener('touchcancel', () => {
+  if (state.charging) releaseAndFire();
 });
 
 // Flechas arriba/abajo para el ángulo
