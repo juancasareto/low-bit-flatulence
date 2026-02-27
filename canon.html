@@ -5,191 +5,269 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>FUEGO GÁSTRICO</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
-    background: #0f0f1b;
+    background: #1a0e04;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    font-family: monospace;
-    color: #e8e8e8;
+    justify-content: flex-start;
+    min-height: 100dvh;
+    overflow: hidden;
+    touch-action: none;
   }
+
+  #game-wrapper {
+    width: 100%;
+    max-width: 430px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100dvh;
+  }
+
+  /* ── Titles ── */
   h1 {
-    font-size: 42px;
-    color: #f5c542;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    text-shadow: 3px 3px #a0801a, 0 0 18px #f5c54288;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(13px, 5vw, 22px);
+    color: #d4830a;
+    text-shadow: 2px 2px 0 #3a1a00, -1px 0 0 #3a1a00, 0 -1px 0 #3a1a00;
+    letter-spacing: 1px;
+    text-align: center;
+    margin: 8px 6px 3px;
+    line-height: 1.4;
   }
   #subtitle {
-    font-size: 12px;
-    color: #aaaacc;
-    letter-spacing: 4px;
-    margin-bottom: 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 2.2vw, 10px);
+    color: #b46808;
+    text-shadow: 1px 1px 0 #3a1a00;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 5px;
   }
+
+  /* ── Canvas ── */
   canvas {
-    border: 2px solid #4a5a7c;
+    width: 100%;
+    max-width: 430px;
+    height: auto;
     image-rendering: pixelated;
     display: block;
-    max-width: 100%;
-    height: auto;
   }
+
+  /* ── HUD bar ── */
   #hud {
+    width: 100%;
+    background: #2e1506;
+    border-top: 3px solid #5a3010;
+    border-bottom: 3px solid #120800;
+    padding: 5px 10px;
     display: flex;
     justify-content: space-between;
-    width: 540px;
-    max-width: 100%;
-    margin-top: 10px;
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: #aaaacc;
+    flex-wrap: nowrap;
+    gap: 2px;
   }
-  #hud span { color: #f5c542; }
-  #panel {
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  #hud div {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.5vw, 8px);
+    color: #c4a060;
+    white-space: nowrap;
   }
-  #panel label { font-size: 13px; letter-spacing: 1px; color: #c0c0e0; }
-  #angle-input {
-    background: #1a1a2e;
-    border: 2px solid #3a3a5c;
-    color: #f5c542;
-    font-family: monospace;
-    font-size: 20px;
-    width: 80px;
-    text-align: center;
-    padding: 4px;
-    outline: none;
-  }
-  #angle-input:focus { border-color: #f5c542; }
-  #fire-btn {
-    background: #8b1a1a;
-    border: 2px solid #cc3333;
-    border-radius: 4px;
-    color: #fff;
-    font-family: monospace;
-    font-size: 15px;
-    letter-spacing: 2px;
-    padding: 8px 22px;
-    cursor: pointer;
-    text-transform: uppercase;
-    user-select: none;
-  }
-  #fire-btn:hover:not(:disabled) { background: #cc3333; }
-  #fire-btn:disabled { opacity: 0.4; cursor: default; }
-  #message {
-    margin-top: 10px;
-    font-size: 14px;
-    letter-spacing: 2px;
-    min-height: 22px;
-    color: #e8e8e8;
-    text-align: center;
-  }
-  #restart-btn {
-    display: none;
-    margin-top: 10px;
-    background: #1a5c1a;
-    border: 2px solid #33cc33;
-    border-radius: 4px;
-    color: #fff;
-    font-family: monospace;
-    font-size: 14px;
-    letter-spacing: 2px;
-    padding: 8px 28px;
-    cursor: pointer;
-    text-transform: uppercase;
-  }
-  #restart-btn:hover { background: #33cc33; }
+  #hud span { color: #f5d060; }
 
-  /* Barra de potencia */
+  /* ── Controls panel ── */
+  #controls {
+    width: 100%;
+    background: #2e1506;
+    padding: 10px 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  /* Row 1 */
+  #controls-row1 {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  /* Angle button (blue-gray 3D) */
+  #angle-btn-wrap {
+    flex: 1;
+    background: linear-gradient(180deg, #7090bc 0%, #4e70a0 45%, #3a5888 100%);
+    border-radius: 16px;
+    border: 2px solid #2a4070;
+    box-shadow: 0 5px 0 #1a2a50, inset 0 1px 0 rgba(255,255,255,0.25);
+    padding: 10px 14px 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+  }
+  #angle-btn-wrap > span {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(9px, 2.5vw, 13px);
+    color: #ffffff;
+    text-shadow: 1px 1px 0 #1a2a50;
+    letter-spacing: 1px;
+  }
+  #angle-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: #1a2a48;
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #0a1428;
+    touch-action: none;
+  }
+  #angle-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(180deg, #f0c840 0%, #c89010 100%);
+    border-radius: 50%;
+    border: 2px solid #907000;
+    box-shadow: 0 2px 0 #604800;
+    cursor: pointer;
+  }
+
+  /* Fire button (red 3D) */
+  #fire-btn {
+    flex: 1;
+    background: linear-gradient(180deg, #ff5050 0%, #d02020 45%, #aa1010 100%);
+    border: 2px solid #800000;
+    border-radius: 16px;
+    box-shadow: 0 5px 0 #660000, inset 0 1px 0 rgba(255,255,255,0.25);
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(11px, 3.2vw, 16px);
+    padding: 14px 8px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    letter-spacing: 0px;
+    line-height: 1.4;
+  }
+  #fire-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #660000;
+  }
+  #fire-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* Row 2: Potencia bar */
   #power-bar-wrap {
-    margin-top: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: #c0c0e0;
-    width: 540px;
-    max-width: 100%;
+    background: #1e0c02;
+    border-radius: 14px;
+    border: 2px solid #0e0600;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+    padding: 7px 12px;
+  }
+  #power-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.8vw, 9px);
+    color: #c4a060;
+    white-space: nowrap;
   }
   #power-bar-track {
     flex: 1;
-    height: 18px;
-    background: #1a1a2e;
-    border: 2px solid #4a5a7c;
-    border-radius: 3px;
-    position: relative;
+    height: 16px;
+    background: #0e0600;
+    border-radius: 8px;
+    border: 1px solid #080400;
     overflow: hidden;
   }
   #power-bar-fill {
     height: 100%;
     width: 0%;
-    background: #444;
+    border-radius: 8px;
     transition: none;
   }
   #power-pct {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.8vw, 9px);
+    color: #f5d060;
     min-width: 38px;
     text-align: right;
-    color: #aaaacc;
+    white-space: nowrap;
   }
 
-  /* ── Portrait phone: compact controls below canvas ── */
-  @media screen and (max-width: 600px) {
-    h1 { font-size: 20px; letter-spacing: 4px; margin-bottom: 2px; }
-    #subtitle { font-size: 9px; letter-spacing: 3px; margin-bottom: 8px; }
-    canvas { max-width: 100%; height: auto; }
-    #hud { margin-top: 6px; font-size: 11px; letter-spacing: 1px; }
-    #panel { margin-top: 6px; gap: 8px; }
-    #angle-input { font-size: 16px; width: 60px; padding: 3px; }
-    #fire-btn { font-size: 13px; padding: 7px 16px; }
-    #power-bar-wrap { margin-top: 6px; font-size: 11px; }
-    #power-bar-track { height: 14px; }
-    #message { margin-top: 6px; font-size: 12px; min-height: 18px; }
-    #restart-btn { margin-top: 6px; font-size: 12px; padding: 6px 18px; }
+  /* Message & restart */
+  #message {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.5vw, 8px);
+    color: #c4a060;
+    text-align: center;
+    padding: 3px 10px;
+    min-height: 16px;
+    line-height: 1.5;
   }
-  /* ── Very small phones: hide subtitle ── */
-  @media screen and (max-height: 780px) {
-    #subtitle { display: none; }
-    h1 { font-size: 16px; margin-bottom: 1px; }
+  #restart-btn {
+    display: none;
+    margin: 4px auto 2px;
+    background: linear-gradient(180deg, #55dd55 0%, #22aa22 100%);
+    border: 2px solid #116611;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 #115511;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 2.2vw, 12px);
+    padding: 10px 22px;
+    cursor: pointer;
+    letter-spacing: 1px;
   }
+  #restart-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #115511; }
 </style>
 </head>
 <body>
 
-<h1>&#x1F525; FUEGO GÁSTRICO</h1>
-<div id="subtitle">LOW-BIT FLATULENCE</div>
+<div id="game-wrapper">
+  <h1>FUEGO GÁSTRICO</h1>
+  <div id="subtitle">LOW-BIT FLATULENCE</div>
 
-<canvas id="cv" width="540" height="960"></canvas>
+  <canvas id="cv" width="540" height="960"></canvas>
 
-<div id="hud">
-  <div>OBJETIVOS: <span id="hud-obj">3</span></div>
-  <div>TIROS: <span id="hud-shots">5</span></div>
-  <div>POTENCIA: <span id="hud-power">0%</span></div>
-  <div>DISTANCIA: <span id="hud-dist">???</span>m</div>
-</div>
-
-<div id="panel">
-  <label>ÁNGULO:</label>
-  <input id="angle-input" type="number" min="1" max="89" value="45" step="1">
-  <button id="fire-btn">&#x1F4A8; ¡FUEGO!</button>
-</div>
-
-<div id="power-bar-wrap">
-  <span>POTENCIA:</span>
-  <div id="power-bar-track">
-    <div id="power-bar-fill"></div>
+  <div id="hud">
+    <div>OBJETIVOS: <span id="hud-obj">3</span></div>
+    <div>TIROS: <span id="hud-shots">5</span></div>
+    <div>POTENCIA: <span id="hud-power">0%</span></div>
+    <div>DISTANCIA: <span id="hud-dist">???</span>m</div>
   </div>
-  <span id="power-pct">0%</span>
-</div>
 
-<div id="message">Mantén ESPACIO o el botón para cargar y suelta para disparar</div>
-<button id="restart-btn">&#x21BA; OTRA VEZ</button>
+  <div id="controls">
+    <div id="controls-row1">
+      <div id="angle-btn-wrap">
+        <span>ÁNGULO</span>
+        <input type="range" id="angle-slider" min="1" max="89" value="45" step="1">
+      </div>
+      <button id="fire-btn">🔥 ¡FUEGO!</button>
+    </div>
+    <div>
+      <div id="power-bar-wrap">
+        <span id="power-label">POTENCIA</span>
+        <div id="power-bar-track">
+          <div id="power-bar-fill"></div>
+        </div>
+        <span id="power-pct">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="message">Mantén FUEGO para cargar y suelta para disparar</div>
+  <button id="restart-btn">↺ OTRA VEZ</button>
+</div>
 
 <script>
 const cv = document.getElementById('cv');
@@ -300,7 +378,8 @@ function setMessage(html) {
 }
 
 function enableInput(on) {
-  document.getElementById('angle-input').disabled = !on;
+  document.getElementById('angle-slider').disabled = !on;
+  document.getElementById('angle-slider').style.opacity = on ? '1' : '0.5';
   document.getElementById('fire-btn').disabled = !on;
 }
 
@@ -354,7 +433,7 @@ function releaseAndFire() {
   if (!state.charging) return;
   state.charging = false;
   if (state.fase !== 'apuntando') return;
-  const a = parseFloat(document.getElementById('angle-input').value);
+  const a = parseFloat(document.getElementById('angle-slider').value);
   if (isNaN(a) || a < 0.5 || a > 89.5) {
     setMessage('<span style="color:#ff8800">Ángulo debe estar entre 1° y 89°.</span>');
     return;
@@ -550,6 +629,7 @@ function draw() {
   ctx.clearRect(0, 0, CV_W, CV_H);
 
   drawSky();
+  drawHills();
   drawGround();
   drawTarget();
   drawButt();
@@ -560,50 +640,133 @@ function draw() {
 }
 
 function drawSky() {
-  const bands = [
-    [0,   205, '#0a0a14'],
-    [205, 410, '#0f0f1e'],
-    [410, 615, '#131326'],
-    [615, 820, '#16182e'],
-  ];
-  for (const [y0, y1, c] of bands) {
-    ctx.fillStyle = c;
-    ctx.fillRect(0, y0, CV_W, y1 - y0);
+  // Daytime gradient: deep blue top → light sky blue → near-white at horizon
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0,    '#3090d8');
+  grad.addColorStop(0.4,  '#50c0f0');
+  grad.addColorStop(0.8,  '#90d8f8');
+  grad.addColorStop(1,    '#c8eefa');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, CV_W, GROUND_Y);
+
+  // Soft cartoon clouds
+  function cloud(cx2, cy2, r) {
+    ctx.fillStyle = 'rgba(255,255,255,0.80)';
+    ctx.beginPath();
+    ctx.ellipse(cx2,      cy2,      r,       r * 0.65, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx2 + r*0.7, cy2 - r*0.25, r*0.65, r*0.55, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx2 - r*0.6, cy2 - r*0.15, r*0.55, r*0.45, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
-  // Stars — white 1px dots scattered across the night sky
-  ctx.fillStyle = '#ffffff';
-  const stars = [
-    [34,8],[100,21],[168,7],[259,17],[335,4],[420,13],[486,26],
-    [76,34],[218,29],[376,24],[504,10],[52,58],[145,70],[290,52],
-    [430,66],[510,44],[18,90],[160,105],[330,88],[480,98],[80,130],
-    [250,118],[430,140],[55,160],[190,150],[360,155],[490,170],
-    [120,190],[300,180],[460,200],[40,220],[200,210],[380,225],
-    [520,215],[90,250],[260,240],[400,255],[30,280],[170,270],
-    [340,285],[490,290],[60,310],[210,300],[380,315],[510,325],
-    [100,350],[270,360],[420,345],[20,380],[180,390],[350,375],
-    [480,400],[70,420],[230,410],[400,430],[120,460],[290,470],
-    [450,480],[35,500],[200,510],[370,495],[510,520],[85,540],
-    [255,550],[425,535],[15,560],[175,575],[345,560],[495,580],
-    [55,600],[225,610],[400,595],[95,640],[270,650],[440,635],
-    [30,665],[185,675],[360,660],[500,680],[75,700],[245,710],
-    [415,695],[110,740],[280,750],[455,735],[195,770],[375,755],
-  ];
-  for (const [sx, sy] of stars) {
-    ctx.fillRect(sx, sy, 1, 1);
+  cloud(80,  70,  44);
+  cloud(290, 48,  56);
+  cloud(460, 78,  38);
+  cloud(150, 210, 50);
+  cloud(390, 195, 42);
+  cloud(510, 320, 36);
+  cloud(60,  380, 40);
+  cloud(320, 420, 48);
+}
+
+function drawHills() {
+  function hillLayer(pts, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(0, CV_H);
+    ctx.lineTo(0, pts[0].y);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i+1].x) / 2;
+      const my = (pts[i].y + pts[i+1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const last = pts[pts.length - 1];
+    ctx.lineTo(last.x, last.y);
+    ctx.lineTo(CV_W, last.y);
+    ctx.lineTo(CV_W, CV_H);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    // crest highlight
+    ctx.beginPath();
+    ctx.moveTo(0, pts[0].y);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i+1].x) / 2;
+      const my = (pts[i].y + pts[i+1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
+  // Layer 1 — distant pink/mauve mountains
+  hillLayer([
+    {x:0,y:503},{x:39,y:313},{x:81,y:482},{x:123,y:250},
+    {x:166,y:419},{x:216,y:271},{x:262,y:461},{x:309,y:292},
+    {x:355,y:482},{x:409,y:261},{x:455,y:440},{x:501,y:292},{x:540,y:482},
+  ], '#c47898', '#e098b8');
+  // Layer 2 — mid purple-pink hills
+  hillLayer([
+    {x:0,y:588},{x:46,y:472},{x:96,y:567},{x:150,y:440},
+    {x:201,y:577},{x:251,y:472},{x:305,y:588},{x:363,y:461},
+    {x:417,y:577},{x:471,y:472},{x:521,y:567},{x:540,y:525},
+  ], '#b07ab8', '#cc9acc');
+  // Layer 3 — bright green hills
+  hillLayer([
+    {x:0,y:683},{x:54,y:598},{x:112,y:668},{x:170,y:584},
+    {x:228,y:672},{x:282,y:592},{x:336,y:679},{x:390,y:588},
+    {x:444,y:677},{x:494,y:605},{x:540,y:683},
+  ], '#5eaa2e', '#80cc50');
+  // Layer 4 — foreground dark green
+  hillLayer([
+    {x:0,y:746},{x:62,y:704},{x:127,y:740},{x:193,y:698},
+    {x:258,y:753},{x:324,y:702},{x:386,y:748},{x:447,y:706},
+    {x:509,y:744},{x:540,y:719},
+  ], '#3d8820', '#5aa830');
 }
 
 function drawGround() {
-  // Dark soil fill below ground line
-  ctx.fillStyle = '#1a1208';
-  ctx.fillRect(0, GROUND_Y, CV_W, CV_H - GROUND_Y);
-  // Thin grass/earth strip
-  ctx.fillStyle = '#1e3a0a';
-  ctx.fillRect(0, GROUND_Y, CV_W, 6);
-  // Small dark grass texture marks
-  ctx.fillStyle = '#152808';
-  for (let x = 0; x < CV_W; x += 16) {
-    ctx.fillRect(x, GROUND_Y + 2, 4, 2);
+  // Dark soil base
+  ctx.fillStyle = '#3d2010';
+  ctx.fillRect(0, GROUND_Y + 30, CV_W, CV_H - GROUND_Y - 30);
+  // Brown earth layer
+  ctx.fillStyle = '#7a4820';
+  ctx.fillRect(0, GROUND_Y + 14, CV_W, 20);
+  // Pebble texture
+  ctx.fillStyle = '#5c3412';
+  for (let x = 12; x < CV_W; x += 48) {
+    ctx.beginPath(); ctx.ellipse(x,    GROUND_Y+22, 5, 3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+24, GROUND_Y+28, 4, 2, 0.4, 0, Math.PI*2); ctx.fill();
+  }
+  // Sub-grass layer
+  ctx.fillStyle = '#2e6a14';
+  ctx.fillRect(0, GROUND_Y + 10, CV_W, 10);
+  // Bright grass top wavy
+  const wa = 5, wf = 80;
+  ctx.beginPath();
+  ctx.moveTo(0, CV_H);
+  ctx.lineTo(0, GROUND_Y + wa);
+  for (let x = 0; x <= CV_W; x += wf) {
+    const y1 = GROUND_Y + Math.sin((x/CV_W)*Math.PI*8+0.3)*wa;
+    const y2 = GROUND_Y + Math.sin(((x+wf/2)/CV_W)*Math.PI*8+0.3)*wa;
+    ctx.quadraticCurveTo(x+wf/4, y1-3, x+wf/2, y2);
+    ctx.quadraticCurveTo(x+wf*3/4, y2+3, x+wf, GROUND_Y+Math.sin(((x+wf)/CV_W)*Math.PI*8+0.3)*wa);
+  }
+  ctx.lineTo(CV_W, CV_H); ctx.closePath();
+  ctx.fillStyle = '#4db825'; ctx.fill();
+  // Grass highlight
+  ctx.strokeStyle = '#72dd40'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y - 1);
+  for (let x = 0; x <= CV_W; x += wf) {
+    const y1 = GROUND_Y + Math.sin((x/CV_W)*Math.PI*8+0.3)*wa - 2;
+    ctx.quadraticCurveTo(x+wf/2, y1-4, x+wf, GROUND_Y+Math.sin(((x+wf)/CV_W)*Math.PI*8+0.3)*wa-2);
+  }
+  ctx.stroke();
+  // Grass blades
+  ctx.fillStyle = '#3aaa18';
+  for (let x = 20; x < CV_W; x += 38) {
+    const gy = GROUND_Y - 2;
+    ctx.fillRect(x,    gy-5, 2, 5);
+    ctx.fillRect(x+6,  gy-7, 2, 7);
+    ctx.fillRect(x+12, gy-4, 2, 4);
   }
 }
 
@@ -1088,7 +1251,7 @@ document.addEventListener('touchcancel', () => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
     e.preventDefault();
-    const input = document.getElementById('angle-input');
+    const input = document.getElementById('angle-slider');
     let val = parseFloat(input.value) || 45;
     val = e.key === 'ArrowUp' ? Math.min(val + 1, 89) : Math.max(val - 1, 1);
     input.value = val;
@@ -1111,16 +1274,9 @@ document.addEventListener('keyup', (e) => {
   }
 });
 
-document.getElementById('angle-input').addEventListener('input', () => {
-  state.angulo = parseFloat(document.getElementById('angle-input').value) || 45;
-});
-
-document.getElementById('angle-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    // Enter en el input también dispara (si ya estaba cargando, suelta; si no, carga y suelta rápido)
-    if (!state.charging) startCharge();
-    releaseAndFire();
-  }
+// Slider de ángulo
+document.getElementById('angle-slider').addEventListener('input', () => {
+  state.angulo = parseFloat(document.getElementById('angle-slider').value) || 45;
 });
 
 document.getElementById('restart-btn').addEventListener('click', () => {
