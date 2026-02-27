@@ -629,7 +629,6 @@ function draw() {
   ctx.clearRect(0, 0, CV_W, CV_H);
 
   drawSky();
-  drawHills();
   drawGround();
   drawTarget();
   drawButt();
@@ -640,143 +639,46 @@ function draw() {
 }
 
 function drawSky() {
-  // Daytime gradient: deep blue top → light sky blue → near-white at horizon
-  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  grad.addColorStop(0,    '#3090d8');
-  grad.addColorStop(0.4,  '#50c0f0');
-  grad.addColorStop(0.8,  '#90d8f8');
-  grad.addColorStop(1,    '#c8eefa');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, CV_W, GROUND_Y);
-
-  // Soft cartoon clouds
-  function cloud(cx2, cy2, r) {
-    ctx.fillStyle = 'rgba(255,255,255,0.80)';
-    ctx.beginPath();
-    ctx.ellipse(cx2,      cy2,      r,       r * 0.65, 0, 0, Math.PI * 2);
-    ctx.ellipse(cx2 + r*0.7, cy2 - r*0.25, r*0.65, r*0.55, 0, 0, Math.PI * 2);
-    ctx.ellipse(cx2 - r*0.6, cy2 - r*0.15, r*0.55, r*0.45, 0, 0, Math.PI * 2);
-    ctx.fill();
+  const bands = [
+    [0,   205, '#0a0a14'],
+    [205, 410, '#0f0f1e'],
+    [410, 615, '#131326'],
+    [615, 820, '#16182e'],
+  ];
+  for (const [y0, y1, c] of bands) {
+    ctx.fillStyle = c;
+    ctx.fillRect(0, y0, CV_W, y1 - y0);
   }
-  cloud(80,  70,  44);
-  cloud(290, 48,  56);
-  cloud(460, 78,  38);
-  cloud(150, 210, 50);
-  cloud(390, 195, 42);
-  cloud(510, 320, 36);
-  cloud(60,  380, 40);
-  cloud(320, 420, 48);
-}
-
-function drawHills() {
-  function hillLayer(pts, fill, stroke) {
-    ctx.beginPath();
-    ctx.moveTo(0, CV_H);
-    ctx.lineTo(0, pts[0].y);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const mx = (pts[i].x + pts[i+1].x) / 2;
-      const my = (pts[i].y + pts[i+1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-    }
-    const last = pts[pts.length - 1];
-    ctx.lineTo(last.x, last.y);
-    ctx.lineTo(CV_W, last.y);
-    ctx.lineTo(CV_W, CV_H);
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    // crest highlight
-    ctx.beginPath();
-    ctx.moveTo(0, pts[0].y);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const mx = (pts[i].x + pts[i+1].x) / 2;
-      const my = (pts[i].y + pts[i+1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-    }
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 2;
-    ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  const stars = [
+    [34,8],[100,21],[168,7],[259,17],[335,4],[420,13],[486,26],
+    [76,34],[218,29],[376,24],[504,10],[52,58],[145,70],[290,52],
+    [430,66],[510,44],[18,90],[160,105],[330,88],[480,98],[80,130],
+    [250,118],[430,140],[55,160],[190,150],[360,155],[490,170],
+    [120,190],[300,180],[460,200],[40,220],[200,210],[380,225],
+    [520,215],[90,250],[260,240],[400,255],[30,280],[170,270],
+    [340,285],[490,290],[60,310],[210,300],[380,315],[510,325],
+    [100,350],[270,360],[420,345],[20,380],[180,390],[350,375],
+    [480,400],[70,420],[230,410],[400,430],[120,460],[290,470],
+    [450,480],[35,500],[200,510],[370,495],[510,520],[85,540],
+    [255,550],[425,535],[15,560],[175,575],[345,560],[495,580],
+    [55,600],[225,610],[400,595],[95,640],[270,650],[440,635],
+    [30,665],[185,675],[360,660],[500,680],[75,700],[245,710],
+    [415,695],[110,740],[280,750],[455,735],[195,770],[375,755],
+  ];
+  for (const [sx, sy] of stars) {
+    ctx.fillRect(sx, sy, 1, 1);
   }
-  // Layer 1 — distant pink/mauve mountains
-  hillLayer([
-    {x:0,y:503},{x:39,y:313},{x:81,y:482},{x:123,y:250},
-    {x:166,y:419},{x:216,y:271},{x:262,y:461},{x:309,y:292},
-    {x:355,y:482},{x:409,y:261},{x:455,y:440},{x:501,y:292},{x:540,y:482},
-  ], '#c47898', '#e098b8');
-  // Layer 2 — mid purple-pink hills
-  hillLayer([
-    {x:0,y:588},{x:46,y:472},{x:96,y:567},{x:150,y:440},
-    {x:201,y:577},{x:251,y:472},{x:305,y:588},{x:363,y:461},
-    {x:417,y:577},{x:471,y:472},{x:521,y:567},{x:540,y:525},
-  ], '#b07ab8', '#cc9acc');
-  // Layer 3 — bright green hills
-  hillLayer([
-    {x:0,y:683},{x:54,y:598},{x:112,y:668},{x:170,y:584},
-    {x:228,y:672},{x:282,y:592},{x:336,y:679},{x:390,y:588},
-    {x:444,y:677},{x:494,y:605},{x:540,y:683},
-  ], '#5eaa2e', '#80cc50');
-  // Layer 4 — foreground dark green
-  hillLayer([
-    {x:0,y:746},{x:62,y:704},{x:127,y:740},{x:193,y:698},
-    {x:258,y:753},{x:324,y:702},{x:386,y:748},{x:447,y:706},
-    {x:509,y:744},{x:540,y:719},
-  ], '#3d8820', '#5aa830');
 }
 
 function drawGround() {
-  // Dark soil base
-  ctx.fillStyle = '#3d2010';
-  ctx.fillRect(0, GROUND_Y + 30, CV_W, CV_H - GROUND_Y - 30);
-  // Brown earth layer
-  ctx.fillStyle = '#7a4820';
-  ctx.fillRect(0, GROUND_Y + 14, CV_W, 20);
-  // Decorative brick border at very top of ground
-  ctx.fillStyle = '#8a5228';
-  for (let x = 0; x < CV_W; x += 19) {
-    ctx.fillRect(x + 1, GROUND_Y + 1, 18, 11);
-  }
-  ctx.fillStyle = '#5c3010';
-  for (let x = 0; x < CV_W; x += 19) {
-    ctx.fillRect(x, GROUND_Y, 1, 13);
-  }
-  ctx.fillRect(0, GROUND_Y + 12, CV_W, 2);
-  // Pebble texture
-  ctx.fillStyle = '#5c3412';
-  for (let x = 12; x < CV_W; x += 48) {
-    ctx.beginPath(); ctx.ellipse(x,    GROUND_Y+22, 5, 3, 0, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(x+24, GROUND_Y+28, 4, 2, 0.4, 0, Math.PI*2); ctx.fill();
-  }
-  // Sub-grass layer
-  ctx.fillStyle = '#2e6a14';
-  ctx.fillRect(0, GROUND_Y + 10, CV_W, 10);
-  // Bright grass top wavy
-  const wa = 5, wf = 80;
-  ctx.beginPath();
-  ctx.moveTo(0, CV_H);
-  ctx.lineTo(0, GROUND_Y + wa);
-  for (let x = 0; x <= CV_W; x += wf) {
-    const y1 = GROUND_Y + Math.sin((x/CV_W)*Math.PI*8+0.3)*wa;
-    const y2 = GROUND_Y + Math.sin(((x+wf/2)/CV_W)*Math.PI*8+0.3)*wa;
-    ctx.quadraticCurveTo(x+wf/4, y1-3, x+wf/2, y2);
-    ctx.quadraticCurveTo(x+wf*3/4, y2+3, x+wf, GROUND_Y+Math.sin(((x+wf)/CV_W)*Math.PI*8+0.3)*wa);
-  }
-  ctx.lineTo(CV_W, CV_H); ctx.closePath();
-  ctx.fillStyle = '#4db825'; ctx.fill();
-  // Grass highlight
-  ctx.strokeStyle = '#72dd40'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, GROUND_Y - 1);
-  for (let x = 0; x <= CV_W; x += wf) {
-    const y1 = GROUND_Y + Math.sin((x/CV_W)*Math.PI*8+0.3)*wa - 2;
-    ctx.quadraticCurveTo(x+wf/2, y1-4, x+wf, GROUND_Y+Math.sin(((x+wf)/CV_W)*Math.PI*8+0.3)*wa-2);
-  }
-  ctx.stroke();
-  // Grass blades
-  ctx.fillStyle = '#3aaa18';
-  for (let x = 20; x < CV_W; x += 38) {
-    const gy = GROUND_Y - 2;
-    ctx.fillRect(x,    gy-5, 2, 5);
-    ctx.fillRect(x+6,  gy-7, 2, 7);
-    ctx.fillRect(x+12, gy-4, 2, 4);
+  ctx.fillStyle = '#1a1208';
+  ctx.fillRect(0, GROUND_Y, CV_W, CV_H - GROUND_Y);
+  ctx.fillStyle = '#1e3a0a';
+  ctx.fillRect(0, GROUND_Y, CV_W, 6);
+  ctx.fillStyle = '#152808';
+  for (let x = 0; x < CV_W; x += 16) {
+    ctx.fillRect(x, GROUND_Y + 2, 4, 2);
   }
 }
 
