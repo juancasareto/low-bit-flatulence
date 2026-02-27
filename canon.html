@@ -211,7 +211,8 @@ buttImg.onload = function() {
   const d = id.data;
   for (let i = 0; i < d.length; i += 4) {
     const r = d[i], g = d[i+1], b = d[i+2];
-    if (g > r + 22 && g > b + 22) { d[i+3] = 0; continue; }
+    if (g > r + 22 && g > b + 22) { d[i+3] = 0; continue; }   // green bg
+    if (b > r + 25 && b > 190)    { d[i+3] = 0; continue; }   // celeste/sky bg
     if (r < 65 && g < 65 && b < 65 && Math.abs(r-g) < 18 && Math.abs(g-b) < 18) { d[i+3] = 0; }
   }
   buttCtx2.putImageData(id, 0, 0);
@@ -549,7 +550,6 @@ function draw() {
   ctx.clearRect(0, 0, CV_W, CV_H);
 
   drawSky();
-  drawHills();
   drawGround();
   drawTarget();
   drawButt();
@@ -559,159 +559,51 @@ function draw() {
   if (state.gameOver) drawOverlay();
 }
 
-function drawHills() {
-  // Helper: draw a filled hill silhouette using quadratic curves
-  function hillLayer(pts, fillColor, shadowColor) {
-    ctx.beginPath();
-    ctx.moveTo(0, CV_H);
-    ctx.lineTo(0, pts[0].y);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const mx = (pts[i].x + pts[i + 1].x) / 2;
-      const my = (pts[i].y + pts[i + 1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-    }
-    const last = pts[pts.length - 1];
-    ctx.lineTo(last.x, last.y);
-    ctx.lineTo(CV_W, last.y);
-    ctx.lineTo(CV_W, CV_H);
-    ctx.closePath();
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-
-    // Thin bright highlight stripe along crest
-    ctx.beginPath();
-    ctx.moveTo(0, pts[0].y);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const mx = (pts[i].x + pts[i + 1].x) / 2;
-      const my = (pts[i].y + pts[i + 1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-    }
-    const lastH = pts[pts.length - 1];
-    ctx.lineTo(lastH.x, lastH.y);
-    ctx.strokeStyle = shadowColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  // Layer 1 — distant pink/mauve mountains (tall, sharp)
-  hillLayer([
-    {x:0,  y:503},{x:39, y:313},{x:81, y:482},{x:123,y:250},
-    {x:166,y:419},{x:216,y:271},{x:262,y:461},{x:309,y:292},
-    {x:355,y:482},{x:409,y:261},{x:455,y:440},{x:501,y:292},
-    {x:540,y:482},
-  ], '#c47898', '#e098b8');
-
-  // Layer 2 — mid purple-pink hills (rounder)
-  hillLayer([
-    {x:0,  y:588},{x:46, y:472},{x:96, y:567},{x:150,y:440},
-    {x:201,y:577},{x:251,y:472},{x:305,y:588},{x:363,y:461},
-    {x:417,y:577},{x:471,y:472},{x:521,y:567},{x:540,y:525},
-  ], '#b07ab8', '#cc9acc');
-
-  // Layer 3 — near bright green hills
-  hillLayer([
-    {x:0,  y:683},{x:54, y:598},{x:112,y:668},{x:170,y:584},
-    {x:228,y:672},{x:282,y:592},{x:336,y:679},{x:390,y:588},
-    {x:444,y:677},{x:494,y:605},{x:540,y:683},
-  ], '#5eaa2e', '#80cc50');
-
-  // Layer 4 — foreground dark green low bumps
-  hillLayer([
-    {x:0,  y:746},{x:62, y:704},{x:127,y:740},{x:193,y:698},
-    {x:258,y:753},{x:324,y:702},{x:386,y:748},{x:447,y:706},
-    {x:509,y:744},{x:540,y:719},
-  ], '#3d8820', '#5aa830');
-}
-
 function drawSky() {
-  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  grad.addColorStop(0,    '#2a7fc7');
-  grad.addColorStop(0.35, '#4ab8f0');
-  grad.addColorStop(0.75, '#8ed4f5');
-  grad.addColorStop(1,    '#c6eefa');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, CV_W, GROUND_Y);
-
-  // A few soft clouds
-  ctx.fillStyle = 'rgba(255,255,255,0.62)';
-  const clouds = [
-    [80,  70, 70, 22], [220, 45, 90, 28], [390, 85, 75, 20],
-    [480, 60, 60, 18], [130,200, 90, 25], [340,220, 70, 20],
+  const bands = [
+    [0,   205, '#0a0a14'],
+    [205, 410, '#0f0f1e'],
+    [410, 615, '#131326'],
+    [615, 820, '#16182e'],
   ];
-  for (const [cx2, cy2, w, h] of clouds) {
-    ctx.beginPath();
-    ctx.ellipse(cx2,      cy2,      w * 0.5, h * 0.5,  0, 0, Math.PI * 2);
-    ctx.ellipse(cx2 + 28, cy2 - 10, w * 0.35, h * 0.6, 0, 0, Math.PI * 2);
-    ctx.ellipse(cx2 - 24, cy2 - 6,  w * 0.3,  h * 0.5, 0, 0, Math.PI * 2);
-    ctx.fill();
+  for (const [y0, y1, c] of bands) {
+    ctx.fillStyle = c;
+    ctx.fillRect(0, y0, CV_W, y1 - y0);
+  }
+  // Stars — white 1px dots scattered across the night sky
+  ctx.fillStyle = '#ffffff';
+  const stars = [
+    [34,8],[100,21],[168,7],[259,17],[335,4],[420,13],[486,26],
+    [76,34],[218,29],[376,24],[504,10],[52,58],[145,70],[290,52],
+    [430,66],[510,44],[18,90],[160,105],[330,88],[480,98],[80,130],
+    [250,118],[430,140],[55,160],[190,150],[360,155],[490,170],
+    [120,190],[300,180],[460,200],[40,220],[200,210],[380,225],
+    [520,215],[90,250],[260,240],[400,255],[30,280],[170,270],
+    [340,285],[490,290],[60,310],[210,300],[380,315],[510,325],
+    [100,350],[270,360],[420,345],[20,380],[180,390],[350,375],
+    [480,400],[70,420],[230,410],[400,430],[120,460],[290,470],
+    [450,480],[35,500],[200,510],[370,495],[510,520],[85,540],
+    [255,550],[425,535],[15,560],[175,575],[345,560],[495,580],
+    [55,600],[225,610],[400,595],[95,640],[270,650],[440,635],
+    [30,665],[185,675],[360,660],[500,680],[75,700],[245,710],
+    [415,695],[110,740],[280,750],[455,735],[195,770],[375,755],
+  ];
+  for (const [sx, sy] of stars) {
+    ctx.fillRect(sx, sy, 1, 1);
   }
 }
 
 function drawGround() {
-  // Dark soil base (bottom fill)
-  ctx.fillStyle = '#3d2010';
-  ctx.fillRect(0, GROUND_Y + 30, CV_W, CV_H - GROUND_Y - 30);
-
-  // Brown earth layer
-  ctx.fillStyle = '#7a4820';
-  ctx.fillRect(0, GROUND_Y + 14, CV_W, 20);
-
-  // Pebble/rock texture in brown layer
-  ctx.fillStyle = '#5c3412';
-  for (let x = 12; x < CV_W; x += 48) {
-    ctx.beginPath();
-    ctx.ellipse(x, GROUND_Y + 22, 5, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(x + 24, GROUND_Y + 28, 4, 2, 0.4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.fillStyle = '#8a5830';
-  for (let x = 30; x < CV_W; x += 60) {
-    ctx.beginPath();
-    ctx.ellipse(x, GROUND_Y + 18, 3, 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Dark green sub-grass layer
-  ctx.fillStyle = '#2e6a14';
-  ctx.fillRect(0, GROUND_Y + 10, CV_W, 10);
-
-  // Bright grass top — wavy using quadratic curves
-  const waveAmp = 5;
-  const waveFreq = 80;
-  ctx.beginPath();
-  ctx.moveTo(0, CV_H);
-  ctx.lineTo(0, GROUND_Y + waveAmp);
-  for (let x = 0; x <= CV_W; x += waveFreq) {
-    const y1 = GROUND_Y + Math.sin((x / CV_W) * Math.PI * 8 + 0.3) * waveAmp;
-    const y2 = GROUND_Y + Math.sin(((x + waveFreq / 2) / CV_W) * Math.PI * 8 + 0.3) * waveAmp;
-    ctx.quadraticCurveTo(x + waveFreq / 4, y1 - 3, x + waveFreq / 2, y2);
-    ctx.quadraticCurveTo(x + waveFreq * 3 / 4, y2 + 3, x + waveFreq, GROUND_Y + Math.sin(((x + waveFreq) / CV_W) * Math.PI * 8 + 0.3) * waveAmp);
-  }
-  ctx.lineTo(CV_W, CV_H);
-  ctx.closePath();
-  ctx.fillStyle = '#4db825';
-  ctx.fill();
-
-  // Grass highlight stripe
-  ctx.strokeStyle = '#72dd40';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, GROUND_Y - 1);
-  for (let x = 0; x <= CV_W; x += waveFreq) {
-    const y1 = GROUND_Y + Math.sin((x / CV_W) * Math.PI * 8 + 0.3) * waveAmp - 2;
-    ctx.quadraticCurveTo(x + waveFreq / 2, y1 - 4, x + waveFreq, GROUND_Y + Math.sin(((x + waveFreq) / CV_W) * Math.PI * 8 + 0.3) * waveAmp - 2);
-  }
-  ctx.stroke();
-
-  // Small grass blades (decorative tufts)
-  ctx.fillStyle = '#3aaa18';
-  for (let x = 20; x < CV_W; x += 38) {
-    const gy = GROUND_Y - 2;
-    ctx.fillRect(x,     gy - 5, 2, 5);
-    ctx.fillRect(x + 6, gy - 7, 2, 7);
-    ctx.fillRect(x + 12, gy - 4, 2, 4);
+  // Dark soil fill below ground line
+  ctx.fillStyle = '#1a1208';
+  ctx.fillRect(0, GROUND_Y, CV_W, CV_H - GROUND_Y);
+  // Thin grass/earth strip
+  ctx.fillStyle = '#1e3a0a';
+  ctx.fillRect(0, GROUND_Y, CV_W, 6);
+  // Small dark grass texture marks
+  ctx.fillStyle = '#152808';
+  for (let x = 0; x < CV_W; x += 16) {
+    ctx.fillRect(x, GROUND_Y + 2, 4, 2);
   }
 }
 
@@ -821,32 +713,23 @@ function drawButt() {
   ctx.fillRect(cx - 44, cy - 2, 88, 2);
   } // end fallback else
 
-  // Cannon nozzle (rotated)
+  // Direction indicator — short dotted line
+  const rad = -a * Math.PI / 180;
+  const lineLen = 52;
+  const lx1 = cx;
+  const ly1 = cy - 42;
+  const lx2 = lx1 + Math.cos(rad) * lineLen;
+  const ly2 = ly1 + Math.sin(rad) * lineLen;
   ctx.save();
-  ctx.translate(cx, cy - 26);
-  ctx.rotate(-a * Math.PI / 180);
-
-  // Cannon barrel — main body
-  ctx.fillStyle = '#7a3040';
-  ctx.fillRect(0, -6, 36, 12);
-  // Barrel highlight top
-  ctx.fillStyle = '#a05070';
-  ctx.fillRect(0, -6, 36, 3);
-  // Barrel shadow bottom
-  ctx.fillStyle = '#501020';
-  ctx.fillRect(0, 3, 36, 3);
-  // Muzzle ring
-  ctx.fillStyle = '#c06080';
-  ctx.fillRect(32, -8, 6, 16);
-  ctx.fillStyle = '#802040';
-  ctx.fillRect(34, -9, 4, 18);
-  // Muzzle hole
-  ctx.fillStyle = '#200810';
-  ctx.fillRect(35, -3, 5, 6);
-  // Cannon band / strap
-  ctx.fillStyle = '#601830';
-  ctx.fillRect(12, -7, 5, 14);
-
+  ctx.setLineDash([6, 5]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(lx1, ly1);
+  ctx.lineTo(lx2, ly2);
+  ctx.stroke();
+  ctx.setLineDash([]);
   ctx.restore();
 
   // Gas cloud when charging (idle puff)
