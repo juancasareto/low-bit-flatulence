@@ -22,7 +22,6 @@
 
   #game-wrapper {
     width: 100%;
-    max-width: 430px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -227,7 +226,11 @@
   }
   #restart-btn {
     display: none;
-    margin: 4px auto 2px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
     background: linear-gradient(180deg, #55dd55 0%, #22aa22 100%);
     border: 2px solid #116611;
     border-radius: 14px;
@@ -239,7 +242,7 @@
     cursor: pointer;
     letter-spacing: 1px;
   }
-  #restart-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #115511; }
+  #restart-btn:active { transform: translate(-50%, -50%) translateY(3px); box-shadow: 0 1px 0 #115511; }
 </style>
 </head>
 <body>
@@ -258,21 +261,19 @@
   </div>
 
   <div id="controls">
+    <div id="power-bar-wrap">
+      <span id="power-label">POTENCIA</span>
+      <div id="power-bar-track">
+        <div id="power-bar-fill"></div>
+      </div>
+      <span id="power-pct">0%</span>
+    </div>
     <div id="controls-row1">
       <div id="angle-btn-wrap">
         <span>ÁNGULO</span>
         <input type="range" id="angle-slider" min="1" max="89" value="45" step="1">
       </div>
       <button id="fire-btn">🔥 ¡FUEGO!</button>
-    </div>
-    <div>
-      <div id="power-bar-wrap">
-        <span id="power-label">POTENCIA</span>
-        <div id="power-bar-track">
-          <div id="power-bar-fill"></div>
-        </div>
-        <span id="power-pct">0%</span>
-      </div>
     </div>
   </div>
 
@@ -444,7 +445,8 @@ function releaseAndFire() {
   if (!state.charging) return;
   state.charging = false;
   if (state.fase !== 'apuntando') return;
-  const a = parseFloat(document.getElementById('angle-slider').value);
+  const rawSlider = parseFloat(document.getElementById('angle-slider').value);
+  const a = 90 - rawSlider;
   if (isNaN(a) || a < 0.5 || a > 89.5) {
     setMessage('<span style="color:#ff8800">Ángulo debe estar entre 1° y 89°.</span>');
     return;
@@ -585,7 +587,7 @@ function endGame(victoria) {
     soundDefeat();
     setMessage('<span style="color:#ff4444">&#x1F4A8; DERROTA. Pólvora desperdiciada.</span>');
   }
-  document.getElementById('restart-btn').style.display = 'inline-block';
+  document.getElementById('restart-btn').style.display = 'block';
 }
 
 function spawnExplosion(x, y, hit) {
@@ -1176,9 +1178,10 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     const input = document.getElementById('angle-slider');
     let val = parseFloat(input.value) || 45;
-    val = e.key === 'ArrowUp' ? Math.min(val + 1, 89) : Math.max(val - 1, 1);
+    // Slider invertido: ArrowUp sube ángulo → baja valor del slider
+    val = e.key === 'ArrowUp' ? Math.max(val - 1, 1) : Math.min(val + 1, 89);
     input.value = val;
-    state.angulo = val;
+    state.angulo = 90 - val;
   }
 });
 
@@ -1197,9 +1200,9 @@ document.addEventListener('keyup', (e) => {
   }
 });
 
-// Slider de ángulo
+// Slider de ángulo (invertido: arrastrar izquierda sube el ángulo)
 document.getElementById('angle-slider').addEventListener('input', () => {
-  state.angulo = parseFloat(document.getElementById('angle-slider').value) || 45;
+  state.angulo = 90 - (parseFloat(document.getElementById('angle-slider').value) || 45);
 });
 
 document.getElementById('restart-btn').addEventListener('click', () => {
