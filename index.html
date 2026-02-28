@@ -526,40 +526,47 @@ function update(dt) {
     if (inX && inY) {
       // currentVy en coordenadas mundo: negativo = cayendo (bajando en pantalla)
       const currentVy = p.vy - G * p.t;
-      // Campana (bowl opening): zona media del sprite, más estrecha que la mochila/alas
-      // La mochila ocupa roughly tcy-90 a tcy-62; la campana: tcy-62 a tcy-28
-      const isCampanaX = p.x >= ttx - 17 && p.x <= ttx + 17;
-      const isCampanaY = p.y >= tcy - 62 && p.y <= tcy - 28;
-      const isSuccess  = currentVy < 0 && isCampanaX && isCampanaY;
+      const isFalling  = currentVy < 0;
 
-      state.proj  = null;
-      state.fase  = 'resultado';
-      state.oportunidades--;
-      state.shotsTotal++;
-
-      if (isSuccess) {
-        // ÉXITO: proyectil entra por la campana — inodoro queda intacto
-        state.projInBowl = true;
-        spawnGluc(Math.round(p.x), Math.round(p.y));
-        soundGluc();
-        setTimeout(() => {
-          setMessage('<span style="color:#33ff33">&#x1F4A9; ¡DENTRO! ¡OBJETIVO ALCANZADO!</span>');
-          setTimeout(() => nextPhase(true), 1500);
-        }, 600);
+      // Proyectil cayendo en zona alta (mochila/alas: tcy-90 a tcy-62):
+      // dejar pasar — la campana está más abajo y está abierta hacia arriba
+      if (isFalling && p.y < tcy - 62) {
+        // Sin colisión en esta zona, el proyectil sigue hacia la campana
       } else {
-        // GOLPE LATERAL/MOCHILA/INFERIOR: inodoro cae, no puntúa
-        spawnSmack(Math.round(p.x), Math.round(p.y));
-        soundThud();
-        state.toiletFalling = true;
-        state.toiletFallVy  = -60;
-        state.toiletFallY   = 0;
-        state.toiletFallRot = 0;
-        setTimeout(() => {
-          setMessage('<span style="color:#ff8800">&#x1F4A5; ¡Golpe seco! El inodoro cayó — sin punto.</span>');
-          setTimeout(() => nextPhase(false), 1500);
-        }, 600);
+        // Campana (bowl opening): tcy-62 a tcy-28, más estrecha que mochila/alas
+        const isCampanaX = p.x >= ttx - 17 && p.x <= ttx + 17;
+        const isCampanaY = p.y >= tcy - 62 && p.y <= tcy - 28;
+        const isSuccess  = isFalling && isCampanaX && isCampanaY;
+
+        state.proj  = null;
+        state.fase  = 'resultado';
+        state.oportunidades--;
+        state.shotsTotal++;
+
+        if (isSuccess) {
+          // ÉXITO: proyectil entra por la campana — inodoro queda intacto
+          state.projInBowl = true;
+          spawnGluc(Math.round(p.x), Math.round(p.y));
+          soundGluc();
+          setTimeout(() => {
+            setMessage('<span style="color:#33ff33">&#x1F4A9; ¡DENTRO! ¡OBJETIVO ALCANZADO!</span>');
+            setTimeout(() => nextPhase(true), 1500);
+          }, 600);
+        } else {
+          // GOLPE LATERAL/INFERIOR: inodoro cae, no puntúa
+          spawnSmack(Math.round(p.x), Math.round(p.y));
+          soundThud();
+          state.toiletFalling = true;
+          state.toiletFallVy  = -60;
+          state.toiletFallY   = 0;
+          state.toiletFallRot = 0;
+          setTimeout(() => {
+            setMessage('<span style="color:#ff8800">&#x1F4A5; ¡Golpe seco! El inodoro cayó — sin punto.</span>');
+            setTimeout(() => nextPhase(false), 1500);
+          }, 600);
+        }
+        return;
       }
-      return;
     }
   }
 
