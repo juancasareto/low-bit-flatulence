@@ -57,9 +57,10 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-end;
     overflow: hidden;
     background: #0a0a14;
+    position: relative;
   }
   canvas {
     max-width: 100%;
@@ -68,6 +69,15 @@
     height: auto;
     display: block;
     image-rendering: pixelated;
+  }
+  #title-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
   }
 
   /* ── HUD bar ── */
@@ -248,10 +258,14 @@
 <body>
 
 <div id="game-wrapper">
-  <h1>FUEGO GÁSTRICO</h1>
-  <div id="subtitle">LOW-BIT FLATULENCE</div>
 
-  <div id="canvas-wrap"><canvas id="cv" width="540" height="960"></canvas></div>
+  <div id="canvas-wrap">
+    <div id="title-overlay">
+      <h1>FUEGO GÁSTRICO</h1>
+      <div id="subtitle">LOW-BIT FLATULENCE</div>
+    </div>
+    <canvas id="cv" width="540" height="780"></canvas>
+  </div>
 
   <div id="hud">
     <div>OBJETIVOS: <span id="hud-obj">3</span></div>
@@ -408,9 +422,9 @@ function enableInput(on) {
 // Física
 const G = 9.8;
 const CANNON_X = 60;
-const GROUND_Y = 820;
+const GROUND_Y = 760;
 const CV_W = 540;
-const CV_H = 960;
+const CV_H = 780;
 
 function worldToScreen(dist) {
   return CANNON_X + (dist / state.alcance) * (CV_W - 20 - CANNON_X);
@@ -754,11 +768,12 @@ function draw() {
 }
 
 function drawSky() {
+  const s = GROUND_Y;
   const bands = [
-    [0,   205, '#0a0a14'],
-    [205, 410, '#0f0f1e'],
-    [410, 615, '#131326'],
-    [615, 820, '#16182e'],
+    [0,              Math.round(s*0.25), '#0a0a14'],
+    [Math.round(s*0.25), Math.round(s*0.5),  '#0f0f1e'],
+    [Math.round(s*0.5),  Math.round(s*0.75), '#131326'],
+    [Math.round(s*0.75), s,                  '#16182e'],
   ];
   for (const [y0, y1, c] of bands) {
     ctx.fillStyle = c;
