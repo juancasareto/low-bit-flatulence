@@ -461,6 +461,7 @@ function enableInput(on) {
 const G = 9.8;
 const CANNON_X = 60;
 const GROUND_Y = 760;
+const CANNON_Y = GROUND_Y - 40; // vertical center of the butt sprite (dh/2 = 40)
 const CV_W = 540;
 const CV_H = 780;
 
@@ -485,7 +486,7 @@ function fire(angleDeg) {
     alcanceReal,
     angleDeg,
     x: CANNON_X,
-    y: GROUND_Y,
+    y: CANNON_Y,
     trail: [],
     exploded: false,
   };
@@ -563,7 +564,7 @@ function update(dt) {
   const ry = p.vy * t - 0.5 * G * t * t;
 
   p.x = worldToScreen(rx);
-  p.y = GROUND_Y - (ry / state.alcance) * (GROUND_Y - 40);
+  p.y = CANNON_Y - (ry / state.alcance) * (CANNON_Y - 40);
 
   p.trail.push({ x: p.x, y: p.y, a: 0.8 });
   if (p.trail.length > 28) p.trail.shift();
@@ -682,7 +683,7 @@ function endGame(victoria) {
   state.charging = false;
   enableInput(false);
   animating = false;
-  draw();
+  renderScene();
   if (victoria) {
     soundVictory();
     setMessage('<span style="color:#f5c542">&#x1F4A9; ¡VICTORIA! Todo embarrado.</span>');
@@ -880,28 +881,29 @@ function renderButt() {
   buttGfx.clear();
   const cx = CANNON_X;
   const cy = GROUND_Y;
+  const by = CANNON_Y; // vertical center of butt sprite
 
-  // Shadow
+  // Shadow (stays at ground)
   buttGfx.ellipse(cx, cy, 44, 7).fill({ color: 0x000000, alpha: 0.25 });
 
-  // Gas cloud (aiming phase)
+  // Gas cloud (aiming phase) — centered on butt center
   if (state.fase === 'apuntando') {
     const t = Date.now() / 400;
-    buttGfx.ellipse(cx - 14, cy - 18, 18, 12).fill({ color: 0xa0dc50, alpha: 0.18 + 0.12 * Math.sin(t) });
-    buttGfx.ellipse(cx + 8,  cy - 12, 14,  9).fill({ color: 0xa0dc50, alpha: 0.20 + 0.10 * Math.sin(t + 1) });
-    buttGfx.ellipse(cx,      cy - 30, 10,  7).fill({ color: 0xa0dc50, alpha: 0.15 + 0.15 * Math.sin(t + 2) });
+    buttGfx.ellipse(cx - 14, by - 18, 18, 12).fill({ color: 0xa0dc50, alpha: 0.18 + 0.12 * Math.sin(t) });
+    buttGfx.ellipse(cx + 8,  by - 12, 14,  9).fill({ color: 0xa0dc50, alpha: 0.20 + 0.10 * Math.sin(t + 1) });
+    buttGfx.ellipse(cx,      by - 30, 10,  7).fill({ color: 0xa0dc50, alpha: 0.15 + 0.15 * Math.sin(t + 2) });
   }
 
-  // Aim dashes — drawn in aimGfx (above buttSprite)
+  // Aim dashes — start from butt center (above buttSprite layer)
   aimGfx.clear();
   if (state.fase === 'apuntando') {
     const a = (state.angulo || 45) * Math.PI / 180;
     const len = 52;
     for (let d = 0; d < len; d += 11) {
       const x1 = cx + Math.cos(a) * d;
-      const y1 = cy - Math.sin(a) * d;
+      const y1 = by - Math.sin(a) * d;
       const x2 = cx + Math.cos(a) * Math.min(d + 6, len);
-      const y2 = cy - Math.sin(a) * Math.min(d + 6, len);
+      const y2 = by - Math.sin(a) * Math.min(d + 6, len);
       aimGfx.moveTo(x1, y1).lineTo(x2, y2)
         .stroke({ width: 2.5, color: 0xffffff, alpha: 0.55 });
     }
