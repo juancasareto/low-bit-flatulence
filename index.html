@@ -331,7 +331,7 @@
 <script>
 // ── PixiJS scene objects (initialized in initPixi) ────────────────────────
 let pixiApp, skyGfx, groundGfx, targetGfx, toiletSprite, distText;
-let buttSprite, buttGfx, trailGfx, projGfx, particleGfx;
+let buttSprite, buttGfx, aimGfx, trailGfx, projGfx, particleGfx;
 let overlayGfx, overlayText, overlaySubText;
 let moonGfx, starsGfx;
 const starData = [];
@@ -892,7 +892,8 @@ function renderButt() {
     buttGfx.ellipse(cx,      cy - 30, 10,  7).fill({ color: 0xa0dc50, alpha: 0.15 + 0.15 * Math.sin(t + 2) });
   }
 
-  // Aim dashes
+  // Aim dashes — drawn in aimGfx (above buttSprite)
+  aimGfx.clear();
   if (state.fase === 'apuntando') {
     const a = (state.angulo || 45) * Math.PI / 180;
     const len = 52;
@@ -901,7 +902,7 @@ function renderButt() {
       const y1 = cy - Math.sin(a) * d;
       const x2 = cx + Math.cos(a) * Math.min(d + 6, len);
       const y2 = cy - Math.sin(a) * Math.min(d + 6, len);
-      buttGfx.moveTo(x1, y1).lineTo(x2, y2)
+      aimGfx.moveTo(x1, y1).lineTo(x2, y2)
         .stroke({ width: 2.5, color: 0xffffff, alpha: 0.55 });
     }
   }
@@ -1029,7 +1030,7 @@ async function initPixi() {
 
   // Wait for butt image to load (buttCanvas is populated in buttImg.onload)
   await new Promise(resolve => {
-    if (buttCanvas.width > 0) resolve();
+    if (buttImg.complete && buttImg.naturalWidth > 0) resolve();
     else {
       const orig = buttImg.onload;
       buttImg.onload = function() { if (orig) orig.call(this); resolve(); };
@@ -1053,30 +1054,44 @@ async function initPixi() {
   const toiletTex = PIXI.Texture.from(toiletImg);
   toiletSprite = new PIXI.Sprite(toiletTex);
   toiletSprite.anchor.set(0.5, 1);  // bottom-center
+  toiletSprite.width  = 125;
+  toiletSprite.height = 105;
 
-  // ── Butt sprite (from off-screen canvas, with clipping) ──
-  const fullButtTex = PIXI.Texture.from(buttCanvas);
+  // ── Butt sprite: re-apply filter from buttImg on a fresh canvas (post-WebGL init) ──
   const dw = 88, dh = Math.round(88 * 149 / 164);
-  const buttTex = new PIXI.Texture({
-    source: fullButtTex.source,
-    frame: new PIXI.Rectangle(14, 6, 164, 149),
-  });
+  const freshButt = document.createElement('canvas');
+  freshButt.width = buttImg.naturalWidth;
+  freshButt.height = buttImg.naturalHeight;
+  const freshCtx = freshButt.getContext('2d');
+  freshCtx.drawImage(buttImg, 0, 0);
+  const freshId = freshCtx.getImageData(0, 0, freshButt.width, freshButt.height);
+  const fd = freshId.data;
+  for (let i = 0; i < fd.length; i += 4) {
+    const r = fd[i], g = fd[i+1], b = fd[i+2];
+    if (g > r + 22 && g > b + 22)   { fd[i+3] = 0; continue; }
+    if (b > r + 25 && b > 190)      { fd[i+3] = 0; continue; }
+    if (r < 65 && g < 65 && b < 65 && Math.abs(r-g) < 18 && Math.abs(g-b) < 18) { fd[i+3] = 0; }
+  }
+  freshCtx.putImageData(freshId, 0, 0);
+  const croppedButt = document.createElement('canvas');
+  croppedButt.width  = dw;
+  croppedButt.height = dh;
+  croppedButt.getContext('2d').drawImage(freshButt, 14, 6, 164, 149, 0, 0, dw, dh);
+  const buttDataUrl = croppedButt.toDataURL('image/png');
+  const buttTex = await PIXI.Assets.load(buttDataUrl);
   buttSprite = new PIXI.Sprite(buttTex);
-  buttSprite.width  = dw;
-  buttSprite.height = dh;
 
   // ── Static sky (gradient + nebula + moon + hill silhouette) ──
   skyGfx = new PIXI.Graphics();
-  // Sky gradient bands (deep space)
-  const skyBands = [
-    [0,                          Math.round(GROUND_Y*0.18), 0x030308],
-    [Math.round(GROUND_Y*0.18),  Math.round(GROUND_Y*0.38), 0x06061a],
-    [Math.round(GROUND_Y*0.38),  Math.round(GROUND_Y*0.58), 0x09091f],
-    [Math.round(GROUND_Y*0.58),  Math.round(GROUND_Y*0.76), 0x0e0e28],
-    [Math.round(GROUND_Y*0.76),  Math.round(GROUND_Y*0.88), 0x120d24],
-    [Math.round(GROUND_Y*0.88),  GROUND_Y,                  0x160f20],
-  ];
-  for (const [y0, y1, c] of skyBands) skyGfx.rect(0, y0, CV_W, y1 - y0).fill(c);
+  // Sky gradient (deep space, smooth)
+  const skyGrad = new PIXI.FillGradient(0, 0, 0, GROUND_Y);
+  skyGrad.addColorStop(0,    0x030308);
+  skyGrad.addColorStop(0.18, 0x06061a);
+  skyGrad.addColorStop(0.38, 0x09091f);
+  skyGrad.addColorStop(0.58, 0x0e0e28);
+  skyGrad.addColorStop(0.76, 0x120d24);
+  skyGrad.addColorStop(1.0,  0x160f20);
+  skyGfx.rect(0, 0, CV_W, GROUND_Y).fill(skyGrad);
 
   // Nebula wisps (large soft patches)
   skyGfx.ellipse(420, 120, 110, 50).fill({ color: 0x200838, alpha: 0.18 });
@@ -1214,6 +1229,7 @@ async function initPixi() {
   // ── Dynamic layers ──
   targetGfx     = new PIXI.Graphics();
   buttGfx       = new PIXI.Graphics();
+  aimGfx        = new PIXI.Graphics();
   trailGfx      = new PIXI.Graphics();
   projGfx       = new PIXI.Graphics();
   particleGfx   = new PIXI.Graphics();
@@ -1245,7 +1261,7 @@ async function initPixi() {
   pixiApp.stage.addChild(
     skyGfx, moonGfx, starsGfx, groundGfx,
     targetGfx, toiletSprite, distText,
-    buttGfx, buttSprite,
+    buttGfx, buttSprite, aimGfx,
     trailGfx, projGfx, particleGfx,
     overlayGfx, overlayText, overlaySubText
   );
