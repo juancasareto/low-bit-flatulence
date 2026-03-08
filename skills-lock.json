@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "pixijs-2d": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "computedHash": "f7bb8d68fd3cad99f0fe3b2c26fceed67983f35d970eee66d35b72d487dd63a5"
+    }
+  }
+}
