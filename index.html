@@ -2418,6 +2418,7 @@ document.querySelectorAll('.char-card').forEach(card => {
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     selectedChar = card.dataset.char;
+    Music.stinger(selectedChar);
     setBackstory(selectedChar);
   });
 });
