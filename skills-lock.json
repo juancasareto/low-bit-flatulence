@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "audiocraft-audio-generation": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "5d6959faf51129c408ffc2af5b32660e39b0a46df7ae6ff5e0ccdcfb23f1f773"
+    },
     "pixi-js": {
       "source": "mindrally/skills",
       "sourceType": "github",
