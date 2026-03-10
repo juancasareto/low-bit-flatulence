@@ -274,6 +274,283 @@
     box-shadow: 0 1px 0 #0a4410, 0 0 10px rgba(60,220,60,0.3);
   }
 
+  /* ── Screen overlays ── */
+  .screen-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #08060f;
+    overflow: hidden;
+  }
+
+  /* ── Title screen ── */
+  .gas-cloud {
+    position: absolute;
+    width: 120px;
+    height: 55px;
+    background: radial-gradient(ellipse, rgba(80,60,20,0.28) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: cloudDrift 7s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes cloudDrift {
+    0%,100% { transform: translateY(0) scaleX(1); opacity: 0.5; }
+    50%      { transform: translateY(-18px) scaleX(1.12); opacity: 0.85; }
+  }
+  #title-toilet {
+    position: absolute;
+    bottom: 12%;
+    right: 8%;
+    font-size: clamp(40px, 10vw, 80px);
+    animation: toiletShake 0.18s ease-in-out infinite;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  @keyframes toiletShake {
+    0%,100% { transform: rotate(-3deg) translateX(-2px); }
+    50%      { transform: rotate(3deg)  translateX(2px);  }
+  }
+  .title-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    z-index: 1;
+    width: 100%;
+    max-width: 540px;
+  }
+  #title-tagline {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.8vw, 8px);
+    color: #a07838;
+    text-align: center;
+    min-height: 24px;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+    padding: 0 16px;
+    line-height: 1.7;
+  }
+  .title-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(18px, 7vw, 38px);
+    color: #f08020;
+    text-shadow: 0 0 24px rgba(240,120,30,0.8), 0 0 8px rgba(240,80,10,0.6),
+                 3px 3px 0 #3a1a00, -1px 0 0 #3a1a00, 0 -1px 0 #3a1a00;
+    letter-spacing: 3px;
+    text-align: center;
+    line-height: 1.3;
+    margin: 0;
+  }
+  .title-subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(7px, 2.2vw, 11px);
+    color: #c06010;
+    font-style: italic;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(200,100,20,0.5);
+  }
+  #title-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.8vw, 9px);
+    color: #8a6828;
+    letter-spacing: 1px;
+    min-height: 18px;
+  }
+  #title-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 80%;
+    max-width: 320px;
+  }
+  #loading-msg {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.5vw, 7px);
+    color: #7a5820;
+    text-align: center;
+  }
+  #loading-bar-track {
+    width: 100%;
+    height: 8px;
+    background: #120800;
+    border-radius: 4px;
+    border: 1px solid #2a1200;
+    overflow: hidden;
+  }
+  #loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #c05010, #f08020);
+    border-radius: 4px;
+    animation: loadingPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes loadingPulse {
+    0%,100% { opacity: 0.7; } 50% { opacity: 1; }
+  }
+  #start-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 3vw, 15px);
+    background: linear-gradient(180deg, #f05010 0%, #b02808 50%, #7a1800 100%);
+    border: 2px solid #3a0e00;
+    border-radius: 12px;
+    box-shadow: 0 4px 0 #3a0800, 0 0 24px rgba(240,80,20,0.5);
+    color: #fff;
+    padding: 12px 32px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    display: none;
+    margin-top: 6px;
+  }
+  #start-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #3a0800;
+  }
+
+  /* ── Character select ── */
+  #char-screen { gap: 14px; }
+  .char-screen-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 3.5vw, 16px);
+    color: #f08020;
+    text-shadow: 0 0 16px rgba(240,120,30,0.6), 2px 2px 0 #3a1a00;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  #char-cards {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 10px;
+  }
+  .char-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(180deg, #150a02 0%, #0d0601 100%);
+    border: 2px solid #2a1200;
+    border-radius: 14px;
+    padding: 12px 10px 10px;
+    cursor: pointer;
+    width: clamp(100px, 28vw, 148px);
+    transition: border-color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  }
+  .char-card:hover { border-color: #804020; box-shadow: 0 0 12px rgba(200,80,20,0.3); }
+  .char-card.selected {
+    border-color: #f08020;
+    box-shadow: 0 0 20px rgba(240,120,30,0.55);
+  }
+  .char-preview {
+    width: 72px;
+    height: 62px;
+    image-rendering: pixelated;
+  }
+  .char-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(6px, 1.8vw, 8px);
+    color: #e09040;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .char-desc {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(4px, 1.2vw, 6px);
+    color: #6a4820;
+    text-align: center;
+    line-height: 1.7;
+  }
+  #play-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 3vw, 14px);
+    background: linear-gradient(180deg, #f05010 0%, #b02808 50%, #7a1800 100%);
+    border: 2px solid #3a0e00;
+    border-radius: 12px;
+    box-shadow: 0 4px 0 #3a0800, 0 0 20px rgba(240,80,20,0.4);
+    color: #fff;
+    padding: 10px 28px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  #play-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #3a0800; }
+
+  /* ── Char backstory panel ── */
+  #char-backstory {
+    max-width: 480px;
+    width: 90%;
+    background: linear-gradient(180deg, #120800 0%, #0a0500 100%);
+    border: 1px solid #2a1200;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.4vw, 7px);
+    color: #c49050;
+    line-height: 2;
+    text-align: center;
+    min-height: 60px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  #char-backstory.fading { opacity: 0; }
+
+  /* ── Volume control ── */
+  #vol-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 6px;
+    width: 100%;
+  }
+  #vol-icon {
+    font-size: clamp(9px, 2.5vw, 13px);
+    cursor: pointer;
+    user-select: none;
+    min-width: 18px;
+    text-align: center;
+    transition: opacity 0.15s;
+  }
+  #vol-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #f08020 0%, #f08020 70%, #2a1200 70%);
+    outline: none;
+    cursor: pointer;
+  }
+  #vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #f08020;
+    box-shadow: 0 0 6px rgba(240,120,30,0.6);
+    cursor: pointer;
+  }
+  #vol-slider::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #f08020;
+    border: none;
+    cursor: pointer;
+  }
+  #vol-pct {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(5px, 1.4vw, 7px);
+    color: #8a5820;
+    min-width: 30px;
+    text-align: right;
+  }
+
   /* ── Mobile landscape ── */
   @media (max-height: 500px) {
     canvas { max-height: 55vh; }
@@ -289,12 +566,54 @@
 </head>
 <body>
 
-<div id="game-wrapper">
+<!-- ── TITLE SCREEN ── -->
+<div id="title-screen" class="screen-overlay">
+  <div class="gas-cloud" style="top:22%;left:8%;animation-delay:0s;animation-duration:7s"></div>
+  <div class="gas-cloud" style="top:55%;left:62%;animation-delay:1.8s;animation-duration:9s"></div>
+  <div class="gas-cloud" style="top:75%;left:25%;animation-delay:3.5s;animation-duration:6s"></div>
+  <div id="title-toilet">🚽</div>
+  <div class="title-content">
+    <div id="title-tagline">El héroe que nadie pidió...</div>
+    <h1 class="title-logo">FUEGO GÁSTRICO</h1>
+    <div class="title-subtitle">Una misión embarrada</div>
+    <div id="title-score"></div>
+    <div id="title-loading">
+      <span id="loading-msg">Procesando frijoles...</span>
+      <div id="loading-bar-track"><div id="loading-bar-fill"></div></div>
+    </div>
+    <button id="start-btn">▶ EMPEZAR</button>
+  </div>
+</div>
+
+<!-- ── CHAR SELECT SCREEN ── -->
+<div id="char-screen" class="screen-overlay" style="display:none">
+  <div class="char-screen-title">ELEGÍ TU ARMA</div>
+  <div id="char-cards">
+    <div class="char-card selected" data-char="tapón">
+      <img class="char-preview" id="prev-tapón" src="" alt="Don Tapón">
+      <div class="char-name">DON<br>TAPÓN</div>
+      <div class="char-desc">7 días sin<br>ir al baño.<br>Rojo de ira.</div>
+    </div>
+    <div class="char-card" data-char="rollius">
+      <img class="char-preview" id="prev-rollius" src="" alt="Maximus Rollius">
+      <div class="char-name">MAXIMUS<br>ROLLIUS</div>
+      <div class="char-desc">Sobreviviente.<br>Gris acero.<br>Sin piedad.</div>
+    </div>
+    <div class="char-card" data-char="flatulento">
+      <img class="char-preview" id="prev-flatulento" src="" alt="Sir Flatulento">
+      <div class="char-name">SIR<br>FLATULENTO</div>
+      <div class="char-desc">Ex-volcán.<br>Dorado.<br>Cósmico.</div>
+    </div>
+  </div>
+  <div id="char-backstory"></div>
+  <button id="play-btn">¡JUGAR!</button>
+</div>
+
+<div id="game-wrapper" style="display:none">
 
   <div id="canvas-wrap">
     <div id="title-overlay">
       <h1>FUEGO GÁSTRICO</h1>
-      <div id="subtitle">LOW-BIT FLATULENCE</div>
     </div>
     <canvas id="cv" width="540" height="780"></canvas>
   </div>
@@ -321,6 +640,11 @@
       </div>
       <button id="fire-btn">🔥 ¡FUEGO!</button>
     </div>
+    <div id="vol-row">
+      <span id="vol-icon">🔊</span>
+      <input type="range" id="vol-slider" min="0" max="100" value="70" step="1">
+      <span id="vol-pct">70%</span>
+    </div>
   </div>
 
   <div id="message">Mantén FUEGO para cargar y suelta para disparar</div>
@@ -329,6 +653,518 @@
 
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
 <script>
+// ── Music System — 3 Temas ────────────────────────────────────────────────
+const Music = (function () {
+  'use strict';
+
+  let _ac = null, _master = null;
+  let _state = { name: null, gain: null, sched: null, active: false, next: 0 };
+  let _shots = 5, _bpm3 = 150;
+
+  // All note frequencies (D minor / G major / E minor)
+  const N = {
+    D2:73.42,  E2:82.41,  F2:87.31,  G2:98.00,  A2:110.00, Bb2:116.54, B2:123.47,
+    C3:130.81, D3:146.83, E3:164.81, F3:174.61, Fs3:185.00, G3:196.00,
+    A3:220.00, Bb3:233.08, B3:246.94,
+    C4:261.63, D4:293.66,  E4:329.63, F4:349.23, Fs4:369.99, G4:392.00,
+    A4:440.00, Bb4:466.16, B4:493.88,
+    C5:523.25, D5:587.33,  E5:659.25, G5:784.00
+  };
+
+  // ── Core init ─────────────────────────────────────────────────────────────
+  function _boot() {
+    if (_ac) { if (_ac.state === 'suspended') _ac.resume(); return; }
+    _ac = new (window.AudioContext || window.webkitAudioContext)();
+    _master = _ac.createGain();
+    _master.gain.value = 0.42;
+    _master.connect(_ac.destination);
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+  function _mkReverb(secs) {
+    const len = Math.floor(_ac.sampleRate * secs);
+    const buf = _ac.createBuffer(2, len, _ac.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+    }
+    const conv = _ac.createConvolver();
+    conv.buffer = buf;
+    return conv;
+  }
+
+  function _mkDistort(amt) {
+    const ws = _ac.createWaveShaper();
+    const n = 256, curve = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const x = i * 2 / n - 1;
+      curve[i] = (Math.PI + amt) * x / (Math.PI + amt * Math.abs(x));
+    }
+    ws.curve = curve; ws.oversample = '4x';
+    return ws;
+  }
+
+  function _mkRetroShaper() {
+    const ws = _ac.createWaveShaper();
+    const n = 512, curve = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; curve[i] = Math.tanh(x * 2) / Math.tanh(2); }
+    ws.curve = curve;
+    return ws;
+  }
+
+  function _mkEcho(dest, dt, fb) {
+    const delay = _ac.createDelay(1.0), fbg = _ac.createGain();
+    delay.delayTime.value = dt; fbg.gain.value = fb;
+    delay.connect(fbg); fbg.connect(delay);
+    delay.connect(dest);
+    return delay;
+  }
+
+  function _osc(dest, type, freq, t, dur, vol, atk = 0.02, rel = 0.05) {
+    const o = _ac.createOscillator(), g = _ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + atk);
+    g.gain.setValueAtTime(vol * 0.88, t + dur * 0.5);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    o.connect(g); g.connect(dest);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  function _noise(dest, t, dur, ftype, ffreq, vol) {
+    const len = Math.floor(_ac.sampleRate * dur);
+    const buf = _ac.createBuffer(1, len, _ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = _ac.createBufferSource(), fl = _ac.createBiquadFilter(), g = _ac.createGain();
+    src.buffer = buf; fl.type = ftype; fl.frequency.value = ffreq; g.gain.value = vol;
+    src.connect(fl); fl.connect(g); g.connect(dest);
+    src.start(t); src.stop(t + dur + 0.01);
+  }
+
+  // ── Theme switch with crossfade ───────────────────────────────────────────
+  function _switch(name, startFn) {
+    _boot();
+    const old = _state;
+    if (old.gain) old.gain.gain.setTargetAtTime(0, _ac.currentTime, 0.12);
+    if (old.sched) clearTimeout(old.sched);
+    old.active = false;
+
+    const g = _ac.createGain();
+    g.gain.setValueAtTime(0, _ac.currentTime);
+    g.gain.linearRampToValueAtTime(1, _ac.currentTime + 0.5);
+    g.connect(_master);
+
+    const st = { name, gain: g, sched: null, active: true, next: _ac.currentTime + 0.08 };
+    _state = st;
+    startFn(g, st);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TEMA 1 — "El Llamado de las Nalgas"
+  // 85 BPM · D menor · loop 4 compases (~11.3s)
+  // Intro: bajo profundo. Melodía: square D4-F4-G4. Clímax: glissando + noise.
+  // ─────────────────────────────────────────────────────────────────────────
+  function _t1Loop(dest, reverb, t0) {
+    const B = 60 / 85, BAR = B * 4;
+
+    // Viento: white noise filtrado lowpass 300Hz (fondo constante)
+    _noise(dest, t0, BAR * 4, 'lowpass', 300, 0.055);
+
+    // === COMPASES 1-2: bajo profundo sawtooth ~80Hz, pulso lento ===
+    for (let beat = 0; beat < 8; beat++) {
+      const t = t0 + beat * B;
+      const o = _ac.createOscillator(), shelf = _ac.createBiquadFilter(), env = _ac.createGain();
+      o.type = 'sawtooth'; o.frequency.value = 80;
+      shelf.type = 'lowshelf'; shelf.frequency.value = 120; shelf.gain.value = 9;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.40, t + 0.3);
+      env.gain.exponentialRampToValueAtTime(0.01, t + B * 0.87);
+      o.connect(shelf); shelf.connect(env);
+      env.connect(reverb); env.connect(dest);
+      o.start(t); o.stop(t + B + 0.05);
+    }
+
+    // === COMPASES 3-4: melodía square D4-F4-G4 con distorsión leve ===
+    const dist = _mkDistort(28);
+    dist.connect(dest);
+    const mel = [
+      [N.D4, 0*B, 0.42*B, 0.19], [N.D4, 0.5*B, 0.42*B, 0.17],
+      [N.F4, 1*B, 0.42*B, 0.19], [N.G4, 1.5*B, 0.42*B, 0.19],
+      [N.A4, 2*B, 0.88*B, 0.22], [N.G4, 3*B, 0.42*B, 0.17],
+      [N.F4, 3.5*B, 0.40*B, 0.16],
+      // compás 4
+      [N.D4, 4*B, 0.42*B, 0.19], [N.F4, 4.5*B, 0.42*B, 0.17],
+      [N.G4, 5*B, 0.42*B, 0.19], [N.Bb4, 5.5*B, 1.7*B, 0.21],
+      [N.A4, 7*B, 0.40*B, 0.17], [N.G4, 7.5*B, 0.38*B, 0.15],
+    ];
+    mel.forEach(([freq, dt, dur, vol]) => {
+      _osc(dist, 'square', freq, t0 + 8 * B + dt, dur, vol, 0.01, 0.04);
+    });
+
+    // Bajo continúa en compases 3-4 (vol reducido)
+    for (let beat = 8; beat < 16; beat++) {
+      _osc(dest, 'sawtooth', 80, t0 + beat * B, B * 0.82, 0.20, 0.08, 0.08);
+    }
+
+    // === COMPASES 3-4: noise percussion cada beat (clímax) ===
+    for (let beat = 8; beat < 16; beat++) {
+      _noise(dest, t0 + beat * B, 0.07, 'highpass', 1800, 0.11);
+    }
+
+    // === CLÍMAX: glissando ascendente D4→D5 sobre compases 3-4 ===
+    {
+      const o = _ac.createOscillator(), g = _ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(N.D4, t0 + 8 * B);
+      o.frequency.exponentialRampToValueAtTime(N.D5, t0 + 12 * B);
+      g.gain.setValueAtTime(0, t0 + 8 * B);
+      g.gain.linearRampToValueAtTime(0.13, t0 + 8 * B + 0.2);
+      g.gain.linearRampToValueAtTime(0.13, t0 + 11.6 * B);
+      g.gain.linearRampToValueAtTime(0, t0 + 12 * B);
+      o.connect(g); g.connect(reverb); g.connect(dest);
+      o.start(t0 + 8 * B); o.stop(t0 + 12 * B + 0.1);
+    }
+
+    // === RESOLUCIÓN compases 3-4 → fade implícito del reverb, vuelve a intro ===
+  }
+
+  function _schedT1(dest, st) {
+    const B = 60 / 85, LOOP = B * 4 * 4;
+    const reverb = _mkReverb(1.8);
+    reverb.connect(dest);
+    function tick() {
+      if (!st.active) return;
+      while (st.next < _ac.currentTime + 0.4) {
+        _t1Loop(dest, reverb, st.next);
+        st.next += LOOP;
+      }
+      st.sched = setTimeout(tick, 100);
+    }
+    tick();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TEMA 2 — "Tres Nalgas, Un Destino"
+  // 120 BPM · Sol mayor · loop 2 compases (~4s) + stingers por personaje
+  // Fanfarria square, melodía triangle, eco tipo 8-bit
+  // ─────────────────────────────────────────────────────────────────────────
+  function _t2Loop(dest, echo, shaper, t0) {
+    const B = 60 / 120, BAR = B * 4;
+    const QQ = B / 4; // semicorchea
+
+    // === COMPÁS 1: fanfarria — arpegio G3-B3-D4-G4 en semicorcheas ===
+    const arp = [N.G3,N.B3,N.D4,N.G4, N.G3,N.B3,N.D4,N.G4,
+                 N.G3,N.B3,N.D4,N.G4, N.G3,N.B3,N.D4,N.B4];
+    arp.forEach((freq, i) => {
+      _osc(shaper, 'square', freq, t0 + i * QQ, QQ * 0.82, 0.16, 0.005, 0.015);
+    });
+
+    // === COMPÁS 2: melodía triangle + bajo staccato ===
+    const mel2 = [
+      [N.G4, 0*B, 0.44*B, 0.20], [N.A4, 0.5*B, 0.22*B, 0.17],
+      [N.B4, 1*B, 0.82*B, 0.21], [N.G4, 2*B, 0.44*B, 0.18],
+      [N.A4, 2.5*B, 0.22*B, 0.16], [N.G4, 3*B, 0.38*B, 0.17],
+      [N.Fs4, 3.5*B, 0.35*B, 0.15],
+    ];
+    mel2.forEach(([freq, dt, dur, vol]) => {
+      _osc(dest, 'triangle', freq, t0 + BAR + dt, dur, vol, 0.01, 0.03);
+    });
+
+    // Bajo staccato G2 en cada beat del compás 2
+    for (let beat = 0; beat < 4; beat++) {
+      _osc(dest, 'sawtooth', N.G2, t0 + BAR + beat * B, B * 0.32, 0.38, 0.01, 0.05);
+    }
+
+    // Trino final: alternancia G4-A4 en 32avo del último beat
+    const trillT = t0 + BAR + 3.5 * B;
+    for (let i = 0; i < 4; i++) {
+      _osc(shaper, 'square', i % 2 === 0 ? N.G4 : N.A4,
+        trillT + i * (QQ / 2), QQ / 2 * 0.9, 0.14, 0.003, 0.01);
+    }
+  }
+
+  function _schedT2(dest, st) {
+    const B = 60 / 120, LOOP = B * 4 * 2;
+    const echo = _mkEcho(dest, 0.25, 0.18);
+    const shaper = _mkRetroShaper();
+    shaper.connect(echo); shaper.connect(dest);
+    function tick() {
+      if (!st.active) return;
+      while (st.next < _ac.currentTime + 0.4) {
+        _t2Loop(dest, echo, shaper, st.next);
+        st.next += LOOP;
+      }
+      st.sched = setTimeout(tick, 80);
+    }
+    tick();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TEMA 3 — "Flatulencia de Combate"
+  // 150→170 BPM · Mi menor · loop 1 compás (~1.6s) · urgencia creciente
+  // ─────────────────────────────────────────────────────────────────────────
+  function _t3Loop(dest, bpFilt, t0, bpm, shots) {
+    const B = 60 / bpm, BAR = B * 4;
+
+    // Kick: sine 60Hz → 30Hz, burst 0.08s cada beat
+    for (let beat = 0; beat < 4; beat++) {
+      const t = t0 + beat * B;
+      const o = _ac.createOscillator(), g = _ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(60, t);
+      o.frequency.exponentialRampToValueAtTime(30, t + 0.08);
+      g.gain.setValueAtTime(0.85, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
+      o.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.1);
+    }
+
+    // Snare: noise highpass 2000Hz en contratiempos
+    for (let beat = 0; beat < 4; beat++) {
+      _noise(dest, t0 + (beat + 0.5) * B, 0.05, 'highpass', 2000, 0.28);
+    }
+
+    // Melodía: square E3-G3-A3-B3 en corcheas → bandpass retro
+    [N.E3, N.G3, N.A3, N.B3, N.E3, N.G3, N.A3, N.B3].forEach((freq, i) => {
+      _osc(bpFilt, 'square', freq, t0 + i * B * 0.5, B * 0.44, 0.22, 0.005, 0.02);
+    });
+
+    // Bajo: sawtooth E2 en negras con portamento suave
+    for (let beat = 0; beat < 4; beat++) {
+      const o = _ac.createOscillator(), g = _ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(N.E2, t0 + beat * B);
+      o.frequency.linearRampToValueAtTime(N.E2 * 0.97, t0 + (beat + 0.8) * B);
+      g.gain.setValueAtTime(0.42, t0 + beat * B);
+      g.gain.exponentialRampToValueAtTime(0.01, t0 + (beat + 0.88) * B);
+      o.connect(g); g.connect(dest); o.start(t0 + beat * B); o.stop(t0 + (beat + 1) * B);
+    }
+
+    // Alarma: oscilador pulsante cuando quedan pocos tiros
+    if (shots <= 2) {
+      const alarmFreq = shots <= 1 ? 880 : 660;
+      const alarmVol  = shots <= 1 ? 0.18 : 0.10;
+      const pulses    = shots <= 1 ? 8 : 5;
+      for (let p = 0; p < pulses; p++) {
+        _osc(dest, 'sine', alarmFreq, t0 + p * (BAR / pulses), (BAR / pulses) * 0.38, alarmVol, 0.01, 0.02);
+      }
+    }
+  }
+
+  function _schedT3(dest, st) {
+    const bpFilt = _ac.createBiquadFilter();
+    bpFilt.type = 'bandpass'; bpFilt.frequency.value = 600; bpFilt.Q.value = 1.5;
+    bpFilt.connect(dest);
+    function tick() {
+      if (!st.active) return;
+      const bpm = _bpm3;
+      const LOOP = (60 / bpm) * 4;
+      while (st.next < _ac.currentTime + 0.3) {
+        _t3Loop(dest, bpFilt, st.next, bpm, _shots);
+        st.next += LOOP;
+      }
+      st.sched = setTimeout(tick, 60);
+    }
+    tick();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STINGERS — sonidos cortos al seleccionar personaje
+  // ─────────────────────────────────────────────────────────────────────────
+  function _stinger(char) {
+    const t = _ac.currentTime + 0.04;
+    if (char === 'tapón') {
+      // Dos notas graves descendentes D3→A2, sawtooth, cortas y tensas
+      _osc(_master, 'sawtooth', N.D3, t, 0.18, 0.38, 0.01, 0.07);
+      _osc(_master, 'sawtooth', N.A2, t + 0.22, 0.22, 0.32, 0.01, 0.10);
+    } else if (char === 'rollius') {
+      // Tres notas staccato G3-G3-D4, square, marciales
+      _osc(_master, 'square', N.G3, t,       0.11, 0.34, 0.005, 0.04);
+      _osc(_master, 'square', N.G3, t + 0.14, 0.11, 0.34, 0.005, 0.04);
+      _osc(_master, 'square', N.D4, t + 0.28, 0.20, 0.36, 0.005, 0.08);
+    } else if (char === 'flatulento') {
+      // Glissando ascendente D4→G4, sine, con vibrato
+      const o = _ac.createOscillator(), vib = _ac.createOscillator();
+      const vibG = _ac.createGain(), env = _ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(N.D4, t);
+      o.frequency.exponentialRampToValueAtTime(N.G4, t + 0.45);
+      vib.frequency.value = 6; vibG.gain.value = 8;
+      vib.connect(vibG); vibG.connect(o.frequency);
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.34, t + 0.05);
+      env.gain.linearRampToValueAtTime(0, t + 0.5);
+      o.connect(env); env.connect(_master);
+      o.start(t); o.stop(t + 0.55); vib.start(t); vib.stop(t + 0.55);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // API PÚBLICA
+  // ─────────────────────────────────────────────────────────────────────────
+  return {
+    playTitle()       { _switch('title', (g, st) => _schedT1(g, st)); },
+    playCharSelect()  { _switch('char',  (g, st) => _schedT2(g, st)); },
+    playGame(shots)   {
+      _shots = shots !== undefined ? shots : 5;
+      _bpm3  = _shots <= 1 ? 170 : _shots <= 2 ? 160 : 150;
+      _switch('game', (g, st) => _schedT3(g, st));
+    },
+    setShots(n) {
+      if (n === _shots) return;
+      _shots = n;
+      _bpm3  = n <= 1 ? 170 : n <= 2 ? 160 : 150;
+    },
+    stinger(char) { _boot(); _stinger(char); },
+    gameOver() {
+      _boot();
+      if (_state.gain) _state.gain.gain.setValueAtTime(0, _ac.currentTime + 0.04);
+      _state.active = false;
+      if (_state.sched) clearTimeout(_state.sched);
+      // Stinger de 3 notas descendentes
+      const t = _ac.currentTime + 0.08;
+      _osc(_master, 'sawtooth', N.D4, t,        0.20, 0.40, 0.01, 0.08);
+      _osc(_master, 'sawtooth', N.A3, t + 0.24, 0.20, 0.35, 0.01, 0.08);
+      _osc(_master, 'sawtooth', N.D3, t + 0.48, 0.32, 0.30, 0.01, 0.10);
+    },
+    setVolume(v) {
+      // v: 0..1
+      if (_master) _master.gain.value = v * 0.42; // 0.42 = base master gain
+    },
+    stop() {
+      if (_master) _master.gain.setTargetAtTime(0, _ac.currentTime, 0.3);
+      _state.active = false;
+      if (_state.sched) clearTimeout(_state.sched);
+    }
+  };
+})();
+
+
+// ── Mensajes de fin de partida ────────────────────────────────────────────
+const MSG_VICTORIA = [
+  '¡DIRECTO AL BOWL! El inodoro no supo lo que le vino.',
+  '¡IMPACTO FECAL CONFIRMADO! La misión fue embarrada con éxito.',
+  'Precisión quirúrgica. Sucia, pero quirúrgica.',
+  '¡MISIÓN EMBARRADA COMPLETADA! Con honor. Relativo honor.',
+  'Ni siete días de estreñimiento te detuvieron. Leyenda.',
+  'El volcán ha hablado. El inodoro, escuchado.',
+];
+const MSG_DERROTA = [
+  'Te quedaste sin munición. Deberías haber comido más fibra.',
+  'Fallaste. El bidé francés se ríe de vos.',
+  'El inodoro sigue volando. Libre. Burlándose.',
+  'El universo te reencarnó en perdedor. Intentalo de nuevo.',
+  'Has deshonrado a todas las nalgas que vinieron antes que vos.',
+];
+
+function _shufflePool(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let _poolVictoria = [];
+let _poolDerrota  = [];
+
+function pickMsg(victoria) {
+  if (victoria) {
+    if (!_poolVictoria.length) _poolVictoria = _shufflePool(MSG_VICTORIA);
+    return _poolVictoria.pop();
+  } else {
+    if (!_poolDerrota.length) _poolDerrota = _shufflePool(MSG_DERROTA);
+    return _poolDerrota.pop();
+  }
+}
+
+// ── Screen management ─────────────────────────────────────────────────────
+let selectedChar = 'tapón';
+const buttTextures = {};
+const charPreviews = {};
+
+function showScreen(name) {
+  document.getElementById('title-screen').style.display = name === 'title' ? 'flex' : 'none';
+  document.getElementById('char-screen').style.display  = name === 'char'  ? 'flex' : 'none';
+  document.getElementById('game-wrapper').style.display = name === 'game'  ? 'flex' : 'none';
+}
+
+function applyCharTint(data, char) {
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i+3] === 0) continue;
+    const r = data[i], g = data[i+1], b = data[i+2];
+    if (char === 'tapón') {
+      data[i]   = Math.min(255, r * 1.28 + 18);
+      data[i+1] = Math.max(0,   Math.min(255, g * 0.72));
+      data[i+2] = Math.max(0,   Math.min(255, b * 0.68));
+    } else if (char === 'rollius') {
+      const luma = 0.299*r + 0.587*g + 0.114*b;
+      data[i]   = Math.min(255, luma * 0.82 + 18);
+      data[i+1] = Math.min(255, luma * 0.88 + 18);
+      data[i+2] = Math.min(255, luma * 1.08 + 32);
+    } else if (char === 'flatulento') {
+      data[i]   = Math.min(255, r * 1.18 + 28);
+      data[i+1] = Math.min(255, g * 1.08 + 12);
+      data[i+2] = Math.max(0,   Math.min(255, b * 0.42));
+    }
+  }
+}
+
+const CHAR_BACKSTORY = {
+  'tapón':     '7 días sin poder ir al baño lo convirtieron en una máquina de guerra. La presión acumulada es su munición. Los inodoros, su enemigo eterno.',
+  'rollius':   'Sobreviviente del Gran Colapso del Papel. Años sin recursos lo forjaron en puro acero. No necesita papel. No necesita piedad. Solo necesita apuntar.',
+  'flatulento':'Fue un volcán legendario. El universo lo reencarnó en formato compacto como castigo por ser dramático. Aceptó su destino... y mejoró su puntería.',
+};
+
+function setBackstory(char) {
+  const el = document.getElementById('char-backstory');
+  if (!el) return;
+  el.classList.add('fading');
+  setTimeout(() => {
+    el.textContent = CHAR_BACKSTORY[char] || '';
+    el.classList.remove('fading');
+  }, 260);
+}
+
+const TAGLINES = [
+  'El héroe que nadie pidió...',
+  'Basado en hechos reales de cada martes',
+  'Clasificado M — por Marrón',
+  'La venganza más olorosa de la historia',
+  'Poder. Presión. Proyectiles.',
+];
+const LOADING_MSGS = [
+  'Procesando frijoles...',
+  'Cargando munición...',
+  'Calentando motores... literalmente',
+  'Preparando misión embarrada...',
+];
+let taglineIdx = 0;
+
+function startTaglineRotation() {
+  const el = document.getElementById('title-tagline');
+  el.textContent = TAGLINES[0];
+  setInterval(() => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      taglineIdx = (taglineIdx + 1) % TAGLINES.length;
+      el.textContent = TAGLINES[taglineIdx];
+      el.style.opacity = '1';
+    }, 420);
+  }, 3800);
+}
+
+function updateHighScore() {
+  const best = localStorage.getItem('fgBestScore');
+  const el = document.getElementById('title-score');
+  if (best !== null) el.textContent = '🏆 Récord del trono: ' + best + ' pts';
+}
+
+function saveHighScore(score) {
+  const best = parseInt(localStorage.getItem('fgBestScore') || '0');
+  if (score > best) localStorage.setItem('fgBestScore', score);
+}
+
 // ── PixiJS scene objects (initialized in initPixi) ────────────────────────
 let pixiApp, skyGfx, groundGfx, targetGfx, toiletSprite, distText;
 let buttSprite, buttGfx, aimGfx, trailGfx, projGfx, particleGfx;
@@ -392,7 +1228,6 @@ function initGame() {
 }
 
 function newObjective() {
-  state.oportunidades = 5;
   state.objDestruido = false;
   state.toiletFalling = false;
   state.toiletFallY = 0;
@@ -595,6 +1430,7 @@ function update(dt) {
         state.fase  = 'resultado';
         state.oportunidades--;
         state.shotsTotal++;
+        Music.setShots(state.oportunidades);
 
         if (isSuccess) {
           // ÉXITO: proyectil entra por la campana — inodoro queda intacto
@@ -637,6 +1473,8 @@ function update(dt) {
     state.fase  = 'resultado';
     state.oportunidades--;
     state.shotsTotal++;
+    Music.setShots(state.oportunidades);
+    if (state.oportunidades <= 0) Music.gameOver();
 
     setTimeout(() => {
       if (state.oportunidades <= 0) {
@@ -657,22 +1495,16 @@ function update(dt) {
 }
 
 function nextPhase(exito) {
-  if (!exito) {
-    state.objetivos--;
-  } else {
-    state.objetivos--;
-  }
+  state.objetivos--;
   updateHUD();
   if (state.objetivos <= 0) {
-    if (exito || state.objDestruido) {
-      endGame(true);
-    } else {
-      endGame(false);
-    }
+    endGame(exito || state.objDestruido);
     return;
   }
-  if (!exito && !state.objDestruido) {
-    // continúa pero con objetivos perdidos
+  // Sin tiros restantes: game over aunque queden objetivos
+  if (state.oportunidades <= 0) {
+    endGame(false);
+    return;
   }
   newObjective();
 }
@@ -683,13 +1515,12 @@ function endGame(victoria) {
   state.charging = false;
   enableInput(false);
   animating = false;
+  state.endMsg = pickMsg(victoria);
   renderScene();
   if (victoria) {
-    soundVictory();
-    setMessage('<span style="color:#f5c542">&#x1F4A9; ¡VICTORIA! Todo embarrado.</span>');
+    setMessage('<span style="color:#f5c542">&#x1F4A9; ¡VICTORIA!</span>');
   } else {
-    soundDefeat();
-    setMessage('<span style="color:#ff4444">&#x1F4A8; DERROTA. Pólvora desperdiciada.</span>');
+    setMessage('<span style="color:#ff4444">&#x1F4A8; DERROTA.</span>');
   }
   document.getElementById('restart-btn').style.display = 'block';
 }
@@ -1017,9 +1848,9 @@ function renderOverlay() {
   };
   overlayText.position.set(CV_W / 2, CV_H / 2);
 
-  overlaySubText.text = state.victoria ? '💩 Todo embarrado' : '💨 Pólvora desperdiciada';
-  overlaySubText.style.fill = '#e8e8e8';
-  overlaySubText.position.set(CV_W / 2, CV_H / 2 + 60);
+  overlaySubText.text = state.endMsg || (state.victoria ? '💩 Todo embarrado' : '💨 Pólvora desperdiciada');
+  overlaySubText.style.fill = '#e0d0a0';
+  overlaySubText.position.set(CV_W / 2, CV_H / 2 + 62);
 }
 
 // ── PIXI INIT ──────────────────────────────────────────────────────────────
@@ -1059,7 +1890,7 @@ async function initPixi() {
   toiletSprite.width  = 125;
   toiletSprite.height = 105;
 
-  // ── Butt sprite: re-apply filter from buttImg on a fresh canvas (post-WebGL init) ──
+  // ── Butt sprite: 3 character variants with tinting ──────────────────────
   const dw = 88, dh = Math.round(88 * 149 / 164);
   const freshButt = document.createElement('canvas');
   freshButt.width = buttImg.naturalWidth;
@@ -1074,14 +1905,22 @@ async function initPixi() {
     if (b > r + 25 && b > 190)      { fd[i+3] = 0; continue; }
     if (r < 65 && g < 65 && b < 65 && Math.abs(r-g) < 18 && Math.abs(g-b) < 18) { fd[i+3] = 0; }
   }
-  freshCtx.putImageData(freshId, 0, 0);
-  const croppedButt = document.createElement('canvas');
-  croppedButt.width  = dw;
-  croppedButt.height = dh;
-  croppedButt.getContext('2d').drawImage(freshButt, 14, 6, 164, 149, 0, 0, dw, dh);
-  const buttDataUrl = croppedButt.toDataURL('image/png');
-  const buttTex = await PIXI.Assets.load(buttDataUrl);
-  buttSprite = new PIXI.Sprite(buttTex);
+  // Create one tinted texture per character
+  for (const charName of ['tapón', 'rollius', 'flatulento']) {
+    const tintData = new Uint8ClampedArray(fd);
+    applyCharTint(tintData, charName);
+    const tintId = new ImageData(tintData, freshButt.width, freshButt.height);
+    const tempC = document.createElement('canvas');
+    tempC.width = freshButt.width; tempC.height = freshButt.height;
+    tempC.getContext('2d').putImageData(tintId, 0, 0);
+    const croppedC = document.createElement('canvas');
+    croppedC.width = dw; croppedC.height = dh;
+    croppedC.getContext('2d').drawImage(tempC, 14, 6, 164, 149, 0, 0, dw, dh);
+    const url = croppedC.toDataURL('image/png');
+    charPreviews[charName] = url;
+    buttTextures[charName] = await PIXI.Assets.load(url);
+  }
+  buttSprite = new PIXI.Sprite(buttTextures[selectedChar]);
 
   // ── Static sky (gradient + nebula + moon + hill silhouette) ──
   skyGfx = new PIXI.Graphics();
@@ -1251,7 +2090,8 @@ async function initPixi() {
   overlayText.anchor.set(0.5);
 
   overlaySubText = new PIXI.Text({ text: '', style: {
-    fontFamily: 'monospace', fontSize: 28, fill: '#e8e8e8'
+    fontFamily: 'monospace', fontSize: 22, fill: '#e0d0a0',
+    wordWrap: true, wordWrapWidth: CV_W * 0.82, align: 'center'
   }});
   overlaySubText.anchor.set(0.5);
 
@@ -1401,9 +2241,6 @@ function soundGluc() {
   gn.gain.setValueAtTime(0.25, now); gn.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
   src.connect(filt); filt.connect(gn); gn.connect(ac.destination);
   src.start(now); src.stop(now + 0.12);
-
-  // Fanfarria de victoria con delay
-  setTimeout(() => soundVictory(), 350);
 }
 
 function soundMiss() {
@@ -1483,47 +2320,7 @@ function soundThud() {
   osc.start(now); osc.stop(now + 0.35);
 }
 
-function soundVictory() {
-  const ac = getAC();
-  const notes = [523, 659, 784]; // C5, E5, G5
-  notes.forEach((freq, i) => {
-    const t = ac.currentTime + i * 0.15;
-    const osc = ac.createOscillator();
-    osc.type = 'square';
-    osc.frequency.value = freq;
 
-    const g = ac.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.35, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-
-    osc.connect(g);
-    g.connect(ac.destination);
-    osc.start(t);
-    osc.stop(t + 0.15);
-  });
-}
-
-function soundDefeat() {
-  const ac = getAC();
-  const notes = [392, 330, 277]; // G4, E4, Db4
-  notes.forEach((freq, i) => {
-    const t = ac.currentTime + i * 0.2;
-    const osc = ac.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = freq;
-
-    const g = ac.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.3, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-
-    osc.connect(g);
-    g.connect(ac.destination);
-    osc.start(t);
-    osc.stop(t + 0.2);
-  });
-}
 
 // Eventos — botón fuego: mousedown inicia carga, mouseup en document dispara
 const fireBtn = document.getElementById('fire-btn');
@@ -1583,6 +2380,26 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Slider de ángulo (invertido: arrastrar izquierda sube el ángulo)
+// Volumen de música
+(function() {
+  const slider = document.getElementById('vol-slider');
+  const icon   = document.getElementById('vol-icon');
+  const pct    = document.getElementById('vol-pct');
+  function updateVol() {
+    const v = parseInt(slider.value);
+    pct.textContent = v + '%';
+    icon.textContent = v === 0 ? '🔇' : v < 40 ? '🔈' : v < 75 ? '🔉' : '🔊';
+    Music.setVolume(v / 100);
+    // Update slider gradient
+    slider.style.background = `linear-gradient(90deg, #f08020 ${v}%, #2a1200 ${v}%)`;
+  }
+  slider.addEventListener('input', updateVol);
+  icon.addEventListener('click', () => {
+    slider.value = slider.value > 0 ? 0 : 70;
+    updateVol();
+  });
+})();
+
 document.getElementById('angle-slider').addEventListener('input', () => {
   state.angulo = 90 - (parseFloat(document.getElementById('angle-slider').value) || 45);
 });
@@ -1590,14 +2407,77 @@ document.getElementById('angle-slider').addEventListener('input', () => {
 document.getElementById('restart-btn').addEventListener('click', () => {
   document.getElementById('restart-btn').style.display = 'none';
   initGame();
+  Music.playGame(state.oportunidades);
   animating = false;
   requestAnimationFrame(idleDraw);
 });
 
-// Inicio
-initPixi().then(() => {
+// ── Char select listeners ─────────────────────────────────────────────────
+document.querySelectorAll('.char-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedChar = card.dataset.char;
+    setBackstory(selectedChar);
+    Music.stinger(selectedChar);
+  });
+});
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  // Swap texture to chosen character
+  if (buttSprite && buttTextures[selectedChar]) {
+    buttSprite.texture = buttTextures[selectedChar];
+  }
+  showScreen('game');
   initGame();
+  Music.playGame(state.oportunidades);
+  animating = false;
   requestAnimationFrame(idleDraw);
+});
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  Music.playTitle();
+  // Populate char preview images
+  ['tapón', 'rollius', 'flatulento'].forEach(ch => {
+    const img = document.getElementById('prev-' + ch);
+    if (img && charPreviews[ch]) img.src = charPreviews[ch];
+  });
+  setBackstory(selectedChar);
+  showScreen('char');
+  setTimeout(() => Music.playCharSelect(), 900);
+});
+
+// ── Inicio: title screen + background PixiJS init ─────────────────────────
+showScreen('title');
+updateHighScore();
+startTaglineRotation();
+
+// Cycle loading messages while initPixi runs
+const loadMsgEl = document.getElementById('loading-msg');
+const loadFillEl = document.getElementById('loading-bar-fill');
+let loadMsgIdx = 0;
+const loadMsgTimer = setInterval(() => {
+  loadMsgIdx = (loadMsgIdx + 1) % LOADING_MSGS.length;
+  loadMsgEl.textContent = LOADING_MSGS[loadMsgIdx];
+}, 1100);
+
+// Animate the loading bar width to simulate progress
+let loadPct = 0;
+const loadBarTimer = setInterval(() => {
+  loadPct = Math.min(loadPct + Math.random() * 12, 90);
+  loadFillEl.style.width = loadPct + '%';
+}, 300);
+
+initPixi().then(() => {
+  clearInterval(loadMsgTimer);
+  clearInterval(loadBarTimer);
+  loadFillEl.style.width = '100%';
+  loadFillEl.style.animation = 'none';
+  loadMsgEl.textContent = '¡Listo para disparar!';
+  setTimeout(() => {
+    document.getElementById('title-loading').style.display = 'none';
+    document.getElementById('start-btn').style.display = 'block';
+  }, 500);
 });
 </script>
 </body>
