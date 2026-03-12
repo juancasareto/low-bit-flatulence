@@ -27,6 +27,22 @@ Original prompt: Eliminar bandas laterales negras en móvil mediante: (1) acorta
 - Juego funcional (disparo, impacto, fallo, HUD)
 - Playwright tests corriendo con NODE_PATH=/Users/juanchi/.codex/skills/develop-web-game/node_modules
 
+## Agregado 5 — Pantalla de Instrucciones (implementado)
+
+- Nueva pantalla `#instructions-screen` insertada entre char-select y game-wrapper
+- Fondo: cielo nocturno `#08060f` con estrellas via `box-shadow` en `::before`/`::after` de `#instr-stars`
+- Gas clouds reutilizando la clase `.gas-cloud` del title screen
+- Papel higiénico: `#instr-paper-wrap` con `overflow:hidden` + animación `paperUnroll` (max-height 0→700px, 0.9s ease-out)
+- Perforaciones pixel art: `.paper-perf` usa `radial-gradient` con `transparent` sobre fondo crema → agujeros visibles sobre el fondo estelar
+- `filter: drop-shadow` en el wrapper para profundidad (respeta los agujeros transparentes)
+- Header del papel con título + línea punteada separadora
+- Texto reglamento en Press Start 2P, tamaño `clamp(5px, 1.4vw, 6.5px)`
+- Botón "¡ENTENDIDO, SOLDADO!" → inicia el juego
+- Botón SKIP (oculto por defecto) → aparece después del primer juego via `localStorage('fg_games_played')`
+- `showScreen('instructions')` resetea la animación del papel via reflow trick
+- `initGame()` incrementa `fg_games_played` en localStorage
+- Play-btn ahora va a instructions en vez de directo al juego
+
 ## TODOs / sugerencias para el siguiente agente
 - Considerar añadir soporte landscape en mobile (`@media (orientation: landscape)`) con canvas horizontal diferente
 - El viewport height exacto del iPhone con Safari depende del estado de las barras de navegación; el fix funciona con dvh
