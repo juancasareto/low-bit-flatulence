@@ -956,7 +956,7 @@
   <div id="hud">
     <div>NIV: <span id="hud-nivel">1</span></div>
     <div id="hud-vidas">💚💚💚</div>
-    <div>HITS: <span id="hud-exitos">0</span>/3</div>
+    <div>HITS: <span id="hud-exitos">0</span>/2</div>
     <div>TIROS: <span id="hud-shots">5</span></div>
     <div id="hud-viento" style="display:none">💨 <span id="hud-viento-val"></span></div>
   </div>
@@ -1932,7 +1932,7 @@ function nextPhase(exito) {
   if (exito) {
     state.exitos++;
     updateHUD();
-    if (state.exitos >= 3) {
+    if (state.exitos >= 2) {
       levelVictory();
       return;
     }
