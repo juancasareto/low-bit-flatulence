@@ -6,7 +6,7 @@ Un juego de artillería arcade hecho en un solo archivo HTML: cargá potencia, a
 
 **Jugalo online:**
 - 🎮 [fuego-gastrico.vercel.app](https://fuego-gastrico.vercel.app/)
-- 🎮 [juancasareto.github.io/low-bit-flatulence](https://juancasareto.github.io/low-bit-flatulence/)
+- 🎮 [juancasareto.github.io/fuego-gastrico-low-bit-flatulence](https://juancasareto.github.io/fuego-gastrico-low-bit-flatulence/)
 
 ![Gameplay](docs/screenshot.png)
 
