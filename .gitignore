@@ -1,0 +1,7 @@
+.DS_Store
+screenshots/
+.claude/
+.agents/
+CLAUDE.md
+progress.md
+skills-lock.json
